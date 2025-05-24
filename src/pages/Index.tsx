@@ -72,6 +72,10 @@ const Index = () => {
   const [challengesCompleted, setChallengesCompleted] = useState(0);
   const [perfectSolutions, setPerfectSolutions] = useState(0);
 
+  // Calculate XP required for next level
+  const xpToNextLevel = level * 100;
+
+  // Challenges array
   const challenges: Challenge[] = [
     { id: '1', description: 'Create a triangle with an area of 1500 square units', target: 1500, property: 'area', tolerance: 75 },
     { id: '2', description: 'Make a rectangle with a perimeter of 400 units', target: 400, property: 'perimeter', tolerance: 20 },
