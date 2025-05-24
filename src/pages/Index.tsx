@@ -8,6 +8,9 @@ import MathFacts from '../components/MathFacts';
 import Timer from '../components/Timer';
 import RandomShapeGenerator from '../components/RandomShapeGenerator';
 import GraphVisualization from '../components/GraphVisualization';
+import EquationInput from '../components/EquationInput';
+import ShapeComparison from '../components/ShapeComparison';
+import GeometryTutorials from '../components/GeometryTutorials';
 
 // Scaling factor to make values more reasonable
 const SCALE_FACTOR = 0.01;
@@ -87,7 +90,8 @@ const Index = () => {
   const [showMathFacts, setShowMathFacts] = useState(false);
   const [currentMathFactsShape, setCurrentMathFactsShape] = useState<'triangle' | 'rectangle' | 'circle'>('triangle');
   const [challengeTime, setChallengeTime] = useState(0);
-  const [resizeHandles, setResizeHandles] = useState<{ [key: string]: Point }>({});
+  const [showEquationInput, setShowEquationInput] = useState(false);
+  const [showTutorials, setShowTutorials] = useState(false);
 
   // Calculate XP required for next level
   const xpToNextLevel = level * 100;
@@ -169,7 +173,6 @@ const Index = () => {
       const perimeter = calculateTrianglePerimeter(currentShape.vertices);
       const angles = calculateTriangleAngles(currentShape.vertices);
       
-      // Additional properties
       const sides = [
         Math.sqrt((currentShape.vertices[1].x - currentShape.vertices[0].x) ** 2 + (currentShape.vertices[1].y - currentShape.vertices[0].y) ** 2) * SCALE_FACTOR,
         Math.sqrt((currentShape.vertices[2].x - currentShape.vertices[1].x) ** 2 + (currentShape.vertices[2].y - currentShape.vertices[1].y) ** 2) * SCALE_FACTOR,
@@ -197,7 +200,7 @@ const Index = () => {
     }
   };
 
-  // Canvas drawing functions
+  // Enhanced canvas drawing functions with better interaction
   const drawShape = (ctx: CanvasRenderingContext2D) => {
     ctx.clearRect(0, 0, 600, 400);
     
@@ -205,9 +208,9 @@ const Index = () => {
     ctx.fillStyle = 'rgba(99, 102, 241, 0.03)';
     ctx.fillRect(0, 0, 600, 400);
     
-    // Animated grid
-    ctx.strokeStyle = 'rgba(99, 102, 241, 0.1)';
-    ctx.lineWidth = 1;
+    // Grid with better visibility
+    ctx.strokeStyle = 'rgba(99, 102, 241, 0.15)';
+    ctx.lineWidth = 0.5;
     for (let i = 0; i < 600; i += 20) {
       ctx.beginPath();
       ctx.moveTo(i, 0);
@@ -223,9 +226,9 @@ const Index = () => {
 
     // Enhanced shape drawing with better gradients
     const gradient = ctx.createLinearGradient(0, 0, 600, 400);
-    gradient.addColorStop(0, 'rgba(99, 102, 241, 0.7)');
-    gradient.addColorStop(0.5, 'rgba(168, 85, 247, 0.7)');
-    gradient.addColorStop(1, 'rgba(236, 72, 153, 0.7)');
+    gradient.addColorStop(0, 'rgba(99, 102, 241, 0.8)');
+    gradient.addColorStop(0.5, 'rgba(168, 85, 247, 0.8)');
+    gradient.addColorStop(1, 'rgba(236, 72, 153, 0.8)');
     
     ctx.fillStyle = gradient;
     ctx.strokeStyle = '#4F46E5';
@@ -241,44 +244,27 @@ const Index = () => {
       ctx.fill();
       ctx.stroke();
 
-      // Enhanced vertices with larger resize handles
+      // Enhanced vertices with better interaction
       currentShape.vertices.forEach((vertex, index) => {
-        // Glow effect
+        // Larger glow effect for easier interaction
         ctx.shadowColor = '#EF4444';
-        ctx.shadowBlur = 15;
+        ctx.shadowBlur = 20;
         ctx.beginPath();
-        ctx.arc(vertex.x, vertex.y, 12, 0, 2 * Math.PI);
+        ctx.arc(vertex.x, vertex.y, 15, 0, 2 * Math.PI);
         ctx.fillStyle = '#EF4444';
         ctx.fill();
         ctx.shadowBlur = 0;
         
-        // Border
+        // Border for better visibility
         ctx.strokeStyle = '#DC2626';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 4;
         ctx.stroke();
         
         // Inner highlight
         ctx.beginPath();
-        ctx.arc(vertex.x, vertex.y, 6, 0, 2 * Math.PI);
+        ctx.arc(vertex.x, vertex.y, 8, 0, 2 * Math.PI);
         ctx.fillStyle = '#FECACA';
         ctx.fill();
-      });
-
-      // Add resize handles on edges
-      const midpoints = [
-        { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 },
-        { x: (b.x + c.x) / 2, y: (b.y + c.y) / 2 },
-        { x: (c.x + a.x) / 2, y: (c.y + a.y) / 2 }
-      ];
-
-      midpoints.forEach((midpoint, index) => {
-        ctx.shadowColor = '#10B981';
-        ctx.shadowBlur = 10;
-        ctx.beginPath();
-        ctx.arc(midpoint.x, midpoint.y, 8, 0, 2 * Math.PI);
-        ctx.fillStyle = '#10B981';
-        ctx.fill();
-        ctx.shadowBlur = 0;
       });
 
     } else if (currentShape.type === 'rectangle') {
@@ -288,42 +274,24 @@ const Index = () => {
       ctx.fill();
       ctx.stroke();
 
-      // Corner handles
+      // Corner handles with better interaction
       currentShape.vertices.forEach((vertex) => {
         ctx.shadowColor = '#EF4444';
-        ctx.shadowBlur = 15;
+        ctx.shadowBlur = 20;
         ctx.beginPath();
-        ctx.arc(vertex.x, vertex.y, 12, 0, 2 * Math.PI);
+        ctx.arc(vertex.x, vertex.y, 15, 0, 2 * Math.PI);
         ctx.fillStyle = '#EF4444';
         ctx.fill();
         ctx.shadowBlur = 0;
         
         ctx.strokeStyle = '#DC2626';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 4;
         ctx.stroke();
         
         ctx.beginPath();
-        ctx.arc(vertex.x, vertex.y, 6, 0, 2 * Math.PI);
+        ctx.arc(vertex.x, vertex.y, 8, 0, 2 * Math.PI);
         ctx.fillStyle = '#FECACA';
         ctx.fill();
-      });
-
-      // Edge handles for easier resizing
-      const edgeHandles = [
-        { x: (topLeft.x + topRight.x) / 2, y: topLeft.y }, // top
-        { x: topRight.x, y: (topRight.y + bottomRight.y) / 2 }, // right
-        { x: (bottomLeft.x + bottomRight.x) / 2, y: bottomRight.y }, // bottom
-        { x: topLeft.x, y: (topLeft.y + bottomLeft.y) / 2 } // left
-      ];
-
-      edgeHandles.forEach((handle) => {
-        ctx.shadowColor = '#10B981';
-        ctx.shadowBlur = 10;
-        ctx.beginPath();
-        ctx.arc(handle.x, handle.y, 8, 0, 2 * Math.PI);
-        ctx.fillStyle = '#10B981';
-        ctx.fill();
-        ctx.shadowBlur = 0;
       });
 
     } else {
@@ -334,34 +302,25 @@ const Index = () => {
 
       // Center handle
       ctx.shadowColor = '#EF4444';
-      ctx.shadowBlur = 15;
+      ctx.shadowBlur = 20;
       ctx.beginPath();
-      ctx.arc(currentShape.center.x, currentShape.center.y, 10, 0, 2 * Math.PI);
+      ctx.arc(currentShape.center.x, currentShape.center.y, 12, 0, 2 * Math.PI);
       ctx.fillStyle = '#EF4444';
       ctx.fill();
       ctx.shadowBlur = 0;
 
-      // Multiple radius controls for easier resizing
-      const radiusControls = [
-        { x: currentShape.center.x + currentShape.radius, y: currentShape.center.y },
-        { x: currentShape.center.x - currentShape.radius, y: currentShape.center.y },
-        { x: currentShape.center.x, y: currentShape.center.y + currentShape.radius },
-        { x: currentShape.center.x, y: currentShape.center.y - currentShape.radius }
-      ];
-
-      radiusControls.forEach((control) => {
-        ctx.shadowColor = '#10B981';
-        ctx.shadowBlur = 10;
-        ctx.beginPath();
-        ctx.arc(control.x, control.y, 10, 0, 2 * Math.PI);
-        ctx.fillStyle = '#10B981';
-        ctx.fill();
-        ctx.shadowBlur = 0;
-      });
+      // Radius control with better interaction
+      ctx.shadowColor = '#10B981';
+      ctx.shadowBlur = 15;
+      ctx.beginPath();
+      ctx.arc(currentShape.center.x + currentShape.radius, currentShape.center.y, 12, 0, 2 * Math.PI);
+      ctx.fillStyle = '#10B981';
+      ctx.fill();
+      ctx.shadowBlur = 0;
     }
   };
 
-  // Mouse event handlers
+  // Enhanced mouse event handlers with better interaction detection
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -371,11 +330,13 @@ const Index = () => {
     const mouseY = e.clientY - rect.top;
 
     if (currentShape.type === 'triangle' || currentShape.type === 'rectangle') {
+      let found = false;
       currentShape.vertices.forEach((vertex, index) => {
         const distance = Math.sqrt((mouseX - vertex.x) ** 2 + (mouseY - vertex.y) ** 2);
-        if (distance < 15) {
+        if (distance < 20 && !found) { // Increased detection radius
           setIsDragging({ type: 'vertex', index });
           setDragOffset({ x: mouseX - vertex.x, y: mouseY - vertex.y });
+          found = true;
         }
       });
     } else {
@@ -404,8 +365,8 @@ const Index = () => {
     const mouseY = e.clientY - rect.top;
 
     if (isDragging.type === 'vertex' && isDragging.index !== undefined) {
-      const newX = Math.max(10, Math.min(590, mouseX - dragOffset.x));
-      const newY = Math.max(10, Math.min(390, mouseY - dragOffset.y));
+      const newX = Math.max(15, Math.min(585, mouseX - dragOffset.x));
+      const newY = Math.max(15, Math.min(385, mouseY - dragOffset.y));
 
       if (currentShape.type === 'triangle') {
         const newVertices = [...currentShape.vertices] as [Point, Point, Point];
@@ -436,8 +397,8 @@ const Index = () => {
         setCurrentShape({ ...currentShape, vertices: newVertices });
       }
     } else if (isDragging.type === 'center' && currentShape.type === 'circle') {
-      const newX = Math.max(currentShape.radius + 10, Math.min(590 - currentShape.radius, mouseX - dragOffset.x));
-      const newY = Math.max(currentShape.radius + 10, Math.min(390 - currentShape.radius, mouseY - dragOffset.y));
+      const newX = Math.max(currentShape.radius + 15, Math.min(585 - currentShape.radius, mouseX - dragOffset.x));
+      const newY = Math.max(currentShape.radius + 15, Math.min(385 - currentShape.radius, mouseY - dragOffset.y));
       setCurrentShape({ ...currentShape, center: { x: newX, y: newY } });
     } else if (isDragging.type === 'radius' && currentShape.type === 'circle') {
       const newRadius = Math.max(20, Math.min(150, Math.abs(mouseX - currentShape.center.x)));
@@ -615,7 +576,6 @@ const Index = () => {
       setStreak(prev => prev + 1);
       setChallengesCompleted(prev => prev + 1);
       
-      // Show math facts after successful completion
       setCurrentMathFactsShape(currentShape.type);
       setShowMathFacts(true);
       
@@ -721,24 +681,24 @@ const Index = () => {
         
         {/* Floating geometric shapes animation */}
         <div className="absolute inset-0 overflow-hidden">
-          {[...Array(6)].map((_, i) => (
+          {[...Array(8)].map((_, i) => (
             <motion.div
               key={i}
               className="absolute w-4 h-4 bg-white opacity-20"
               style={{
-                left: `${20 + i * 15}%`,
-                top: `${30 + (i % 2) * 40}%`,
+                left: `${15 + i * 12}%`,
+                top: `${25 + (i % 3) * 30}%`,
                 clipPath: i % 3 === 0 ? 'polygon(50% 0%, 0% 100%, 100% 100%)' : 
                          i % 3 === 1 ? 'circle(50%)' : 
                          'rect(0px, 0px, 16px, 16px)'
               }}
               animate={{
-                y: [0, -20, 0],
+                y: [0, -25, 0],
                 rotate: [0, 180, 360],
-                scale: [1, 1.2, 1]
+                scale: [1, 1.3, 1]
               }}
               transition={{
-                duration: 3 + i,
+                duration: 4 + i * 0.5,
                 repeat: Infinity,
                 ease: "easeInOut"
               }}
@@ -757,7 +717,7 @@ const Index = () => {
                 🔺 Shape Explorer: Interactive Geometry Playground 🔵
               </h1>
               <p className="text-xl text-indigo-100">
-                Level up your geometry skills through hands-on exploration!
+                Master geometry through hands-on exploration and interactive learning!
               </p>
             </motion.div>
             <motion.div 
@@ -766,7 +726,7 @@ const Index = () => {
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.7, delay: 0.4 }}
             >
-              <div className="text-sm text-indigo-200">Next-Gen Learning</div>
+              <div className="text-sm text-indigo-200">Production Ready</div>
               <div className="text-2xl font-bold">Level {level}</div>
             </motion.div>
           </div>
@@ -808,6 +768,41 @@ const Index = () => {
             <RandomShapeGenerator 
               onGenerateShape={setCurrentShape} 
             />
+
+            {/* New Feature Buttons */}
+            <div className="bg-white rounded-xl shadow-xl p-6 border border-gray-100">
+              <h3 className="text-lg font-bold mb-4 text-gray-800 flex items-center">
+                <span className="mr-2">🚀</span> Advanced Features
+              </h3>
+              <div className="space-y-3">
+                <motion.button
+                  onClick={() => setShowEquationInput(true)}
+                  className="w-full p-3 bg-gradient-to-r from-green-100 to-green-200 text-green-700 rounded-lg hover:from-green-200 hover:to-green-300 transition-all font-medium"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  📊 Graph Equations
+                </motion.button>
+                
+                <motion.button
+                  onClick={() => setCompareMode(!compareMode)}
+                  className="w-full p-3 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700 rounded-lg hover:from-blue-200 hover:to-blue-300 transition-all font-medium"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  🔄 Compare Shapes
+                </motion.button>
+                
+                <motion.button
+                  onClick={() => setShowTutorials(true)}
+                  className="w-full p-3 bg-gradient-to-r from-purple-100 to-purple-200 text-purple-700 rounded-lg hover:from-purple-200 hover:to-purple-300 transition-all font-medium"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  🎓 Tutorials
+                </motion.button>
+              </div>
+            </div>
 
             {/* Enhanced Shape Selection */}
             <div className="bg-white rounded-xl shadow-xl p-6 border border-gray-100">
@@ -926,7 +921,7 @@ const Index = () => {
                 >
                   <div className="flex items-center">
                     <span className="mr-2">💡</span>
-                    <span className="font-semibold">Drag the larger glowing dots to resize easily!</span>
+                    <span className="font-semibold">Drag the red dots to resize shapes easily!</span>
                   </div>
                 </motion.div>
               </div>
@@ -944,6 +939,21 @@ const Index = () => {
                 currentProperties={properties} 
               />
             </motion.div>
+
+            {/* Shape Comparison */}
+            {compareMode && (
+              <motion.div
+                className="mt-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <ShapeComparison 
+                  currentShape={currentShape}
+                  shapeHistory={shapeHistory}
+                />
+              </motion.div>
+            )}
           </motion.div>
 
           {/* Right Sidebar - Enhanced Properties & Challenges */}
@@ -1119,6 +1129,18 @@ const Index = () => {
         shapeType={currentMathFactsShape}
         isVisible={showMathFacts}
         onClose={() => setShowMathFacts(false)}
+      />
+
+      {/* Equation Input Modal */}
+      <EquationInput 
+        isVisible={showEquationInput}
+        onClose={() => setShowEquationInput(false)}
+      />
+
+      {/* Geometry Tutorials Modal */}
+      <GeometryTutorials 
+        isVisible={showTutorials}
+        onClose={() => setShowTutorials(false)}
       />
 
       {/* Achievement Banner */}
