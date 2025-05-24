@@ -1,6 +1,9 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import GameStats from '../components/GameStats';
+import AchievementBanner from '../components/AchievementBanner';
+import LevelProgress from '../components/LevelProgress';
+import PowerUps from '../components/PowerUps';
 
 // Types for our shapes
 interface Point {
@@ -52,12 +55,32 @@ const Index = () => {
   const [feedback, setFeedback] = useState<string>('');
   const [showFeedback, setShowFeedback] = useState(false);
 
+  // Gamification state
+  const [score, setScore] = useState(0);
+  const [level, setLevel] = useState(1);
+  const [currentXP, setCurrentXP] = useState(0);
+  const [achievements, setAchievements] = useState<string[]>([]);
+  const [newAchievement, setNewAchievement] = useState<string | null>(null);
+  const [streak, setStreak] = useState(0);
+  const [powerUps, setPowerUps] = useState<{ [key: string]: number }>({
+    hint: 2,
+    precision: 1,
+    timeFreeze: 1,
+    doublePoints: 1,
+  });
+  const [activePowerUp, setActivePowerUp] = useState<string | null>(null);
+  const [challengesCompleted, setChallengesCompleted] = useState(0);
+  const [perfectSolutions, setPerfectSolutions] = useState(0);
+
   const challenges: Challenge[] = [
     { id: '1', description: 'Create a triangle with an area of 1500 square units', target: 1500, property: 'area', tolerance: 75 },
     { id: '2', description: 'Make a rectangle with a perimeter of 400 units', target: 400, property: 'perimeter', tolerance: 20 },
     { id: '3', description: 'Create a circle with an area of 3000 square units', target: 3000, property: 'area', tolerance: 150 },
     { id: '4', description: 'Make a triangle with a perimeter of 300 units', target: 300, property: 'perimeter', tolerance: 15 },
-    { id: '5', description: 'Create a rectangle with an area of 8000 square units', target: 8000, property: 'area', tolerance: 400 }
+    { id: '5', description: 'Create a rectangle with an area of 8000 square units', target: 8000, property: 'area', tolerance: 400 },
+    { id: '6', description: 'Make a circle with circumference of 250 units', target: 250, property: 'circumference', tolerance: 12 },
+    { id: '7', description: 'Create a triangle with area of 2500 square units', target: 2500, property: 'area', tolerance: 125 },
+    { id: '8', description: 'Make a rectangle with perimeter of 600 units', target: 600, property: 'perimeter', tolerance: 30 },
   ];
 
   // Shape calculations
@@ -280,6 +303,93 @@ const Index = () => {
     setDragOffset({ x: 0, y: 0 });
   };
 
+  // Gamification functions
+  const addScore = (points: number) => {
+    const multiplier = activePowerUp === 'doublePoints' ? 2 : 1;
+    const finalPoints = points * multiplier;
+    setScore(prev => prev + finalPoints);
+    setCurrentXP(prev => {
+      const newXP = prev + finalPoints;
+      if (newXP >= xpToNextLevel) {
+        setLevel(prevLevel => prevLevel + 1);
+        checkLevelAchievements(level + 1);
+        return newXP - xpToNextLevel;
+      }
+      return newXP;
+    });
+  };
+
+  const checkAchievements = (isSuccess: boolean, timeTaken?: number) => {
+    const newAchievements: string[] = [];
+
+    if (isSuccess && achievements.length === 0) {
+      newAchievements.push('First Success');
+    }
+
+    if (isSuccess && timeTaken && timeTaken < 10) {
+      if (!achievements.includes('Speed Demon')) {
+        newAchievements.push('Speed Demon');
+      }
+    }
+
+    if (isSuccess && streak >= 5 && !achievements.includes('Streak Master')) {
+      newAchievements.push('Streak Master');
+    }
+
+    if (challengesCompleted >= 10 && !achievements.includes('Explorer')) {
+      newAchievements.push('Explorer');
+    }
+
+    if (perfectSolutions >= 5 && !achievements.includes('Perfectionist')) {
+      newAchievements.push('Perfectionist');
+    }
+
+    if (newAchievements.length > 0) {
+      setAchievements(prev => [...prev, ...newAchievements]);
+      setNewAchievement(newAchievements[0]);
+      addScore(50 * newAchievements.length);
+    }
+  };
+
+  const checkLevelAchievements = (newLevel: number) => {
+    if (newLevel >= 5 && !achievements.includes('Rising Star')) {
+      setAchievements(prev => [...prev, 'Rising Star']);
+      setNewAchievement('Rising Star');
+    }
+    if (newLevel >= 10 && !achievements.includes('Master')) {
+      setAchievements(prev => [...prev, 'Master']);
+      setNewAchievement('Master');
+    }
+  };
+
+  const usePowerUp = (type: string) => {
+    if (powerUps[type] > 0) {
+      setPowerUps(prev => ({ ...prev, [type]: prev[type] - 1 }));
+      setActivePowerUp(type);
+      
+      if (type === 'hint' && currentChallenge) {
+        const properties = getShapeProperties();
+        let currentValue = 0;
+        if (currentChallenge.property === 'area') {
+          currentValue = properties.area;
+        } else if (currentChallenge.property === 'perimeter') {
+          currentValue = properties.perimeter || 0;
+        } else if (currentChallenge.property === 'circumference') {
+          currentValue = (properties as any).circumference || 0;
+        }
+        
+        const difference = currentChallenge.target - currentValue;
+        const direction = difference > 0 ? 'bigger' : 'smaller';
+        setFeedback(`💡 Hint: Make it ${direction}! You need ${Math.abs(difference).toFixed(0)} more units.`);
+        setShowFeedback(true);
+        setTimeout(() => setShowFeedback(false), 4000);
+      }
+      
+      // Clear active power-up after use
+      setTimeout(() => setActivePowerUp(null), type === 'doublePoints' ? 30000 : 10000);
+    }
+  };
+
   // Challenge mode functions
   const startChallenge = () => {
     const randomChallenge = challenges[Math.floor(Math.random() * challenges.length)];
@@ -287,6 +397,13 @@ const Index = () => {
     setChallengeMode(true);
     setFeedback('');
     setShowFeedback(false);
+    
+    // Award power-ups periodically
+    if (challengesCompleted > 0 && challengesCompleted % 3 === 0) {
+      const powerUpTypes = ['hint', 'precision', 'timeFreeze', 'doublePoints'];
+      const randomPowerUp = powerUpTypes[Math.floor(Math.random() * powerUpTypes.length)];
+      setPowerUps(prev => ({ ...prev, [randomPowerUp]: prev[randomPowerUp] + 1 }));
+    }
   };
 
   const checkChallenge = () => {
@@ -304,14 +421,34 @@ const Index = () => {
     }
 
     const difference = Math.abs(currentValue - currentChallenge.target);
-    const isWithinTolerance = difference <= currentChallenge.tolerance;
+    const tolerance = activePowerUp === 'precision' ? currentChallenge.tolerance * 2 : currentChallenge.tolerance;
+    const isWithinTolerance = difference <= tolerance;
 
     if (isWithinTolerance) {
-      setFeedback('🎉 Correct! Well done!');
-    } else if (currentValue > currentChallenge.target) {
-      setFeedback('📏 Too big! Make it smaller.');
+      const basePoints = 100;
+      const accuracyBonus = Math.max(0, (tolerance - difference) / tolerance * 50);
+      const streakBonus = streak * 10;
+      const totalPoints = Math.round(basePoints + accuracyBonus + streakBonus);
+      
+      addScore(totalPoints);
+      setStreak(prev => prev + 1);
+      setChallengesCompleted(prev => prev + 1);
+      
+      if (difference <= currentChallenge.tolerance * 0.1) {
+        setPerfectSolutions(prev => prev + 1);
+        setFeedback('🎯 PERFECT! Amazing precision!');
+      } else {
+        setFeedback('🎉 Excellent work! Challenge completed!');
+      }
+      
+      checkAchievements(true);
     } else {
-      setFeedback('📐 Too small! Make it bigger.');
+      setStreak(0);
+      if (currentValue > currentChallenge.target) {
+        setFeedback('📏 Too big! Make it smaller.');
+      } else {
+        setFeedback('📐 Too small! Make it bigger.');
+      }
     }
 
     setShowFeedback(true);
@@ -374,23 +511,101 @@ const Index = () => {
   const properties = getShapeProperties();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-      {/* Header */}
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100">
+      {/* Enhanced Header */}
       <motion.header 
-        className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 shadow-lg"
+        className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-6 shadow-xl relative overflow-hidden"
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-3xl font-bold text-center">
-          🔺 Shape Explorer: Interactive Geometry Playground 🔵
-        </h1>
-        <p className="text-center mt-2 text-blue-100">
-          Discover geometry through hands-on exploration!
-        </p>
+        <div className="absolute inset-0 bg-white opacity-10">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
+          }} />
+        </div>
+        <div className="relative z-10">
+          <h1 className="text-4xl font-bold text-center mb-2">
+            🔺 Shape Explorer: Interactive Geometry Playground 🔵
+          </h1>
+          <p className="text-center text-lg text-indigo-100">
+            Level up your geometry skills through hands-on exploration!
+          </p>
+        </div>
       </motion.header>
 
       <div className="flex flex-col lg:flex-row gap-6 p-6">
+        {/* Left Sidebar - Game Stats */}
+        <motion.div 
+          className="w-full lg:w-80 space-y-4"
+          initial={{ x: -50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          <GameStats 
+            score={score} 
+            level={level} 
+            achievements={achievements} 
+            streak={streak} 
+          />
+          
+          <LevelProgress 
+            currentXP={currentXP} 
+            xpToNextLevel={xpToNextLevel} 
+            level={level} 
+          />
+          
+          <PowerUps 
+            powerUps={powerUps} 
+            onUsePowerUp={usePowerUp} 
+          />
+
+          {/* Shape Selection */}
+          <div className="bg-white rounded-lg shadow-lg p-4">
+            <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+              <span className="mr-2">🎯</span> Choose Your Shape
+            </h3>
+            <div className="space-y-2">
+              <motion.button
+                onClick={createTriangle}
+                className={`w-full p-4 rounded-lg font-medium transition-all ${
+                  currentShape.type === 'triangle'
+                    ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg scale-105'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-102'
+                }`}
+                whileHover={{ scale: currentShape.type !== 'triangle' ? 1.02 : 1.05 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                🔺 Triangle
+              </motion.button>
+              <motion.button
+                onClick={createRectangle}
+                className={`w-full p-4 rounded-lg font-medium transition-all ${
+                  currentShape.type === 'rectangle'
+                    ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg scale-105'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-102'
+                }`}
+                whileHover={{ scale: currentShape.type !== 'rectangle' ? 1.02 : 1.05 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                ⬜ Rectangle
+              </motion.button>
+              <motion.button
+                onClick={createCircle}
+                className={`w-full p-4 rounded-lg font-medium transition-all ${
+                  currentShape.type === 'circle'
+                    ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg scale-105'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-102'
+                }`}
+                whileHover={{ scale: currentShape.type !== 'circle' ? 1.02 : 1.05 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                ⭕ Circle
+              </motion.button>
+            </div>
+          </div>
+        </motion.div>
+
         {/* Main Canvas Area */}
         <motion.div 
           className="flex-1"
@@ -398,91 +613,63 @@ const Index = () => {
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <div className="bg-white rounded-lg shadow-lg p-4">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">Shape Canvas</h2>
+          <div className="bg-white rounded-xl shadow-xl p-6 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
+            <h2 className="text-2xl font-bold mb-4 text-gray-800 flex items-center">
+              <span className="mr-2">🎨</span> Shape Canvas
+              {activePowerUp && (
+                <span className="ml-auto text-sm bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+                  {activePowerUp} Active! ⚡
+                </span>
+              )}
+            </h2>
             <div className="relative">
               <canvas
                 ref={canvasRef}
                 width={600}
                 height={400}
-                className="border-2 border-gray-300 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 cursor-pointer"
+                className="border-4 border-gradient-to-r from-blue-200 to-purple-200 rounded-xl bg-gradient-to-br from-blue-50 to-purple-50 cursor-pointer shadow-inner"
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
               />
-              <div className="absolute top-2 left-2 bg-white bg-opacity-90 rounded p-2 text-sm text-gray-600">
-                💡 Drag the red dots to reshape your figure!
+              <div className="absolute top-3 left-3 bg-white bg-opacity-95 rounded-lg p-3 text-sm text-gray-700 shadow-lg">
+                <div className="flex items-center">
+                  <span className="mr-2">💡</span>
+                  <span className="font-medium">Drag the red dots to reshape your figure!</span>
+                </div>
               </div>
             </div>
           </div>
         </motion.div>
 
-        {/* Control Panel */}
+        {/* Right Sidebar - Properties & Challenge */}
         <motion.div 
-          className="w-full lg:w-80 space-y-6"
+          className="w-full lg:w-80 space-y-4"
           initial={{ x: 50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.3 }}
         >
-          {/* Shape Selection */}
-          <div className="bg-white rounded-lg shadow-lg p-4">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">Choose Your Shape</h3>
-            <div className="space-y-2">
-              <motion.button
-                onClick={createTriangle}
-                className={`w-full p-3 rounded-lg font-medium transition-all ${
-                  currentShape.type === 'triangle'
-                    ? 'bg-blue-500 text-white shadow-md'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                🔺 Triangle
-              </motion.button>
-              <motion.button
-                onClick={createRectangle}
-                className={`w-full p-3 rounded-lg font-medium transition-all ${
-                  currentShape.type === 'rectangle'
-                    ? 'bg-green-500 text-white shadow-md'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                ⬜ Rectangle
-              </motion.button>
-              <motion.button
-                onClick={createCircle}
-                className={`w-full p-3 rounded-lg font-medium transition-all ${
-                  currentShape.type === 'circle'
-                    ? 'bg-purple-500 text-white shadow-md'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                ⭕ Circle
-              </motion.button>
-            </div>
-          </div>
-
           {/* Properties Display */}
           <motion.div 
             className="bg-white rounded-lg shadow-lg p-4"
             layout
           >
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">Shape Properties</h3>
+            <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+              <span className="mr-2">📊</span> Shape Properties
+            </h3>
             <div className="space-y-3">
               <motion.div 
-                className="bg-blue-50 p-3 rounded-lg"
+                className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg border-l-4 border-blue-500"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 key={`area-${properties.area}`}
               >
-                <div className="text-sm font-medium text-blue-700">Area</div>
-                <div className="text-lg font-bold text-blue-900">
+                <div className="text-sm font-medium text-blue-700 flex items-center">
+                  <span className="mr-1">📐</span> Area
+                </div>
+                <div className="text-xl font-bold text-blue-900">
                   {properties.area.toFixed(1)} sq units
                 </div>
                 {currentShape.type === 'triangle' && (
@@ -503,15 +690,15 @@ const Index = () => {
               </motion.div>
 
               <motion.div 
-                className="bg-green-50 p-3 rounded-lg"
+                className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg border-l-4 border-green-500"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 key={`perimeter-${properties.perimeter || (properties as any).circumference}`}
               >
-                <div className="text-sm font-medium text-green-700">
-                  {currentShape.type === 'circle' ? 'Circumference' : 'Perimeter'}
+                <div className="text-sm font-medium text-green-700 flex items-center">
+                  <span className="mr-1">📏</span> {currentShape.type === 'circle' ? 'Circumference' : 'Perimeter'}
                 </div>
-                <div className="text-lg font-bold text-green-900">
+                <div className="text-xl font-bold text-green-900">
                   {((properties.perimeter || (properties as any).circumference) || 0).toFixed(1)} units
                 </div>
                 {currentShape.type === 'triangle' && (
@@ -533,12 +720,14 @@ const Index = () => {
 
               {currentShape.type === 'triangle' && (properties as any).angles && (
                 <motion.div 
-                  className="bg-yellow-50 p-3 rounded-lg"
+                  className="bg-gradient-to-r from-yellow-50 to-yellow-100 p-4 rounded-lg border-l-4 border-yellow-500"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   key={`angles-${(properties as any).angles.join('-')}`}
                 >
-                  <div className="text-sm font-medium text-yellow-700">Angles</div>
+                  <div className="text-sm font-medium text-yellow-700 flex items-center">
+                    <span className="mr-1">📐</span> Angles
+                  </div>
                   <div className="text-sm font-bold text-yellow-900">
                     {(properties as any).angles.map((angle: number, index: number) => (
                       <div key={index}>Angle {index + 1}: {angle.toFixed(1)}°</div>
@@ -554,25 +743,32 @@ const Index = () => {
 
           {/* Challenge Mode */}
           <div className="bg-white rounded-lg shadow-lg p-4">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800">Challenge Mode</h3>
+            <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center">
+              <span className="mr-2">🎯</span> Challenge Mode
+            </h3>
             {!challengeMode ? (
               <motion.button
                 onClick={startChallenge}
-                className="w-full p-3 bg-gradient-to-r from-orange-400 to-red-500 text-white rounded-lg font-medium hover:from-orange-500 hover:to-red-600 transition-all"
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                className="w-full p-4 bg-gradient-to-r from-orange-400 via-red-500 to-pink-500 text-white rounded-lg font-bold text-lg hover:from-orange-500 hover:via-red-600 hover:to-pink-600 transition-all shadow-lg"
+                whileHover={{ scale: 1.05, boxShadow: "0 10px 25px rgba(0,0,0,0.2)" }}
+                whileTap={{ scale: 0.95 }}
               >
-                🎯 Start Challenge
+                🚀 Start Challenge
               </motion.button>
             ) : (
               <div className="space-y-3">
-                <div className="bg-orange-50 p-3 rounded-lg">
-                  <div className="text-sm font-medium text-orange-700 mb-2">Current Challenge:</div>
-                  <div className="text-sm text-orange-900">{currentChallenge?.description}</div>
+                <div className="bg-gradient-to-r from-orange-50 to-red-50 p-4 rounded-lg border-l-4 border-orange-500">
+                  <div className="text-sm font-medium text-orange-700 mb-2 flex items-center">
+                    <span className="mr-1">🎯</span> Current Challenge:
+                  </div>
+                  <div className="text-sm text-orange-900 font-medium">{currentChallenge?.description}</div>
+                  <div className="text-xs text-orange-600 mt-2">
+                    Streak: {streak} | Completed: {challengesCompleted}
+                  </div>
                 </div>
                 <motion.button
                   onClick={() => setChallengeMode(false)}
-                  className="w-full p-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all"
+                  className="w-full p-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
@@ -584,17 +780,26 @@ const Index = () => {
         </motion.div>
       </div>
 
-      {/* Feedback Toast */}
+      {/* Achievement Banner */}
+      <AchievementBanner 
+        achievement={newAchievement} 
+        onClose={() => setNewAchievement(null)} 
+      />
+
+      {/* Enhanced Feedback Toast */}
       <AnimatePresence>
         {showFeedback && (
           <motion.div
-            className="fixed top-20 right-6 bg-white border-l-4 border-blue-500 rounded-lg shadow-lg p-4 max-w-sm"
-            initial={{ x: 300, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: 300, opacity: 0 }}
+            className="fixed top-24 right-6 bg-white border-l-4 border-blue-500 rounded-lg shadow-2xl p-4 max-w-sm z-40"
+            initial={{ x: 300, opacity: 0, scale: 0.8 }}
+            animate={{ x: 0, opacity: 1, scale: 1 }}
+            exit={{ x: 300, opacity: 0, scale: 0.8 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
             <div className="text-lg font-medium text-gray-800">{feedback}</div>
+            {activePowerUp === 'doublePoints' && (
+              <div className="text-sm text-yellow-600 mt-1">⚡ Double Points Active!</div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
