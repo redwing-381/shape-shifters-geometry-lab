@@ -6,7 +6,6 @@ import LevelProgress from '../components/LevelProgress';
 import PowerUps from '../components/PowerUps';
 import MathFacts from '../components/MathFacts';
 import Timer from '../components/Timer';
-import RandomShapeGenerator from '../components/RandomShapeGenerator';
 import GraphVisualization from '../components/GraphVisualization';
 import EquationInput from '../components/EquationInput';
 import ShapeComparison from '../components/ShapeComparison';
@@ -200,7 +199,7 @@ const Index = () => {
     }
   };
 
-  // Original canvas drawing with smaller dots
+  // Fixed canvas drawing with proper handle sizes
   const drawShape = (ctx: CanvasRenderingContext2D) => {
     ctx.clearRect(0, 0, 600, 400);
     
@@ -235,11 +234,11 @@ const Index = () => {
       ctx.fill();
       ctx.stroke();
 
-      // Smaller vertices (reduced from 20 to 8)
-      currentShape.vertices.forEach((vertex) => {
+      // Draw vertex handles
+      currentShape.vertices.forEach((vertex, index) => {
         ctx.beginPath();
-        ctx.arc(vertex.x, vertex.y, 8, 0, 2 * Math.PI);
-        ctx.fillStyle = '#ef4444';
+        ctx.arc(vertex.x, vertex.y, 6, 0, 2 * Math.PI);
+        ctx.fillStyle = isDragging?.type === 'vertex' && isDragging?.index === index ? '#dc2626' : '#ef4444';
         ctx.fill();
         ctx.strokeStyle = '#dc2626';
         ctx.lineWidth = 2;
@@ -253,11 +252,11 @@ const Index = () => {
       ctx.fill();
       ctx.stroke();
 
-      // Smaller corner handles (reduced from 20 to 8)
-      currentShape.vertices.forEach((vertex) => {
+      // Draw corner handles
+      currentShape.vertices.forEach((vertex, index) => {
         ctx.beginPath();
-        ctx.arc(vertex.x, vertex.y, 8, 0, 2 * Math.PI);
-        ctx.fillStyle = '#ef4444';
+        ctx.arc(vertex.x, vertex.y, 6, 0, 2 * Math.PI);
+        ctx.fillStyle = isDragging?.type === 'vertex' && isDragging?.index === index ? '#dc2626' : '#ef4444';
         ctx.fill();
         ctx.strokeStyle = '#dc2626';
         ctx.lineWidth = 2;
@@ -270,21 +269,24 @@ const Index = () => {
       ctx.fill();
       ctx.stroke();
 
-      // Center handle (reduced from 18 to 8)
+      // Center handle
       ctx.beginPath();
-      ctx.arc(currentShape.center.x, currentShape.center.y, 8, 0, 2 * Math.PI);
-      ctx.fillStyle = '#ef4444';
+      ctx.arc(currentShape.center.x, currentShape.center.y, 6, 0, 2 * Math.PI);
+      ctx.fillStyle = isDragging?.type === 'center' ? '#dc2626' : '#ef4444';
       ctx.fill();
 
-      // Radius control (reduced from 18 to 8)
+      // Radius control
       ctx.beginPath();
-      ctx.arc(currentShape.center.x + currentShape.radius, currentShape.center.y, 8, 0, 2 * Math.PI);
-      ctx.fillStyle = '#10b981';
+      ctx.arc(currentShape.center.x + currentShape.radius, currentShape.center.y, 6, 0, 2 * Math.PI);
+      ctx.fillStyle = isDragging?.type === 'radius' ? '#059669' : '#10b981';
       ctx.fill();
+      ctx.strokeStyle = '#047857';
+      ctx.lineWidth = 2;
+      ctx.stroke();
     }
   };
 
-  // Original mouse event handlers with better detection
+  // Fixed mouse event handlers
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -293,27 +295,37 @@ const Index = () => {
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
+    console.log('Mouse down at:', mouseX, mouseY);
+
     if (currentShape.type === 'triangle' || currentShape.type === 'rectangle') {
-      let found = false;
-      currentShape.vertices.forEach((vertex, index) => {
+      for (let index = 0; index < currentShape.vertices.length; index++) {
+        const vertex = currentShape.vertices[index];
         const distance = Math.sqrt((mouseX - vertex.x) ** 2 + (mouseY - vertex.y) ** 2);
-        if (distance < 15 && !found) { // Smaller detection radius
+        
+        if (distance < 12) { // Increased detection radius
           setIsDragging({ type: 'vertex', index });
           setDragOffset({ x: mouseX - vertex.x, y: mouseY - vertex.y });
-          found = true;
+          console.log('Started dragging vertex', index);
+          return;
         }
-      });
-    } else {
+      }
+    } else if (currentShape.type === 'circle') {
+      // Check center handle
       const centerDistance = Math.sqrt((mouseX - currentShape.center.x) ** 2 + (mouseY - currentShape.center.y) ** 2);
+      
+      // Check radius control
       const radiusControlX = currentShape.center.x + currentShape.radius;
       const radiusControlDistance = Math.sqrt((mouseX - radiusControlX) ** 2 + (mouseY - currentShape.center.y) ** 2);
 
-      if (centerDistance < 15) {
+      if (centerDistance < 12) {
         setIsDragging({ type: 'center' });
         setDragOffset({ x: mouseX - currentShape.center.x, y: mouseY - currentShape.center.y });
-      } else if (radiusControlDistance < 15) {
+        console.log('Started dragging center');
+        return;
+      } else if (radiusControlDistance < 12) {
         setIsDragging({ type: 'radius' });
-        setDragOffset({ x: 0, y: 0 });
+        console.log('Started dragging radius');
+        return;
       }
     }
   };
@@ -338,24 +350,24 @@ const Index = () => {
         setCurrentShape({ ...currentShape, vertices: newVertices });
       } else if (currentShape.type === 'rectangle') {
         const newVertices = [...currentShape.vertices] as [Point, Point, Point, Point];
-        const [topLeft, topRight, bottomRight, bottomLeft] = newVertices;
         
-        if (isDragging.index === 0) {
+        // Keep rectangle shape when dragging corners
+        if (isDragging.index === 0) { // top-left
           newVertices[0] = { x: newX, y: newY };
-          newVertices[1] = { x: topRight.x, y: newY };
-          newVertices[3] = { x: newX, y: bottomLeft.y };
-        } else if (isDragging.index === 1) {
+          newVertices[1] = { x: newVertices[1].x, y: newY };
+          newVertices[3] = { x: newX, y: newVertices[3].y };
+        } else if (isDragging.index === 1) { // top-right
           newVertices[1] = { x: newX, y: newY };
-          newVertices[0] = { x: topLeft.x, y: newY };
-          newVertices[2] = { x: newX, y: bottomRight.y };
-        } else if (isDragging.index === 2) {
+          newVertices[0] = { x: newVertices[0].x, y: newY };
+          newVertices[2] = { x: newX, y: newVertices[2].y };
+        } else if (isDragging.index === 2) { // bottom-right
           newVertices[2] = { x: newX, y: newY };
-          newVertices[1] = { x: newX, y: topRight.y };
-          newVertices[3] = { x: bottomLeft.x, y: newY };
-        } else {
+          newVertices[1] = { x: newX, y: newVertices[1].y };
+          newVertices[3] = { x: newVertices[3].x, y: newY };
+        } else if (isDragging.index === 3) { // bottom-left
           newVertices[3] = { x: newX, y: newY };
-          newVertices[0] = { x: newX, y: topLeft.y };
-          newVertices[2] = { x: bottomRight.x, y: newY };
+          newVertices[0] = { x: newX, y: newVertices[0].y };
+          newVertices[2] = { x: newVertices[2].x, y: newY };
         }
         
         setCurrentShape({ ...currentShape, vertices: newVertices });
@@ -365,12 +377,19 @@ const Index = () => {
       const newY = Math.max(currentShape.radius + 10, Math.min(390 - currentShape.radius, mouseY - dragOffset.y));
       setCurrentShape({ ...currentShape, center: { x: newX, y: newY } });
     } else if (isDragging.type === 'radius' && currentShape.type === 'circle') {
-      const newRadius = Math.max(20, Math.min(120, Math.abs(mouseX - currentShape.center.x)));
+      const maxRadius = Math.min(
+        currentShape.center.x,
+        currentShape.center.y,
+        600 - currentShape.center.x,
+        400 - currentShape.center.y
+      ) - 10;
+      const newRadius = Math.max(20, Math.min(maxRadius, Math.abs(mouseX - currentShape.center.x)));
       setCurrentShape({ ...currentShape, radius: newRadius });
     }
   };
 
   const handleMouseUp = () => {
+    console.log('Mouse up - stopping drag');
     setIsDragging(null);
     setDragOffset({ x: 0, y: 0 });
   };
@@ -621,7 +640,7 @@ const Index = () => {
     if (!ctx) return;
 
     drawShape(ctx);
-  }, [currentShape]);
+  }, [currentShape, isDragging]);
 
   // Check challenge progress whenever shape changes
   useEffect(() => {
