@@ -1,73 +1,91 @@
-# Welcome to your Lovable project
+# Shape Shifters Geometry Lab
 
-## Project info
+A modern web application for exploring and learning geometry concepts through interactive visualizations and experiments.
 
-**URL**: https://lovable.dev/projects/7b5a2268-d3ba-44ac-b99d-b42ea26025de
+## 🚀 Tech Stack
 
-## How can I edit this code?
+- **Frontend Framework**: React 18 with TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS with shadcn/ui components
+- **State Management**: React Query
+- **Form Handling**: React Hook Form with Zod validation
+- **Routing**: React Router DOM
+- **Animations**: Framer Motion
+- **UI Components**: Radix UI primitives
+- **Development Tools**: ESLint, TypeScript, PostCSS
 
-There are several ways of editing your application.
+## 📦 Prerequisites
 
-**Use Lovable**
+- Node.js (Latest LTS version recommended)
+- npm or bun package manager
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/7b5a2268-d3ba-44ac-b99d-b42ea26025de) and start prompting.
+## 🛠️ Installation
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+1. Clone the repository:
+```bash
+git clone https://github.com/redwing-381/shape-shifters-geometry-lab.git
+cd shape-shifters-geometry-lab
 ```
 
-**Edit a file directly in GitHub**
+2. Install dependencies:
+```bash
+npm install
+# or
+bun install
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+3. Start the development server:
+```bash
+npm run dev
+# or
+bun dev
+```
 
-**Use GitHub Codespaces**
+## 🏗️ Project Structure
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```
+shape-shifters-geometry-lab/
+├── src/
+│   ├── components/     # Reusable UI components
+│   ├── hooks/         # Custom React hooks
+│   ├── lib/           # Utility functions and configurations
+│   ├── pages/         # Page components
+│   ├── App.tsx        # Main application component
+│   └── main.tsx       # Application entry point
+├── public/            # Static assets
+└── ...config files
+```
 
-## What technologies are used for this project?
+## 🚀 Available Scripts
 
-This project is built with:
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run build:dev` - Build for development
+- `npm run lint` - Run ESLint
+- `npm run preview` - Preview production build
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## 🎨 Features
 
-## How can I deploy this project?
+- Interactive geometry visualizations
+- Modern, responsive UI with shadcn/ui components
+- Type-safe development with TypeScript
+- Efficient state management with React Query
+- Form validation with Zod
+- Smooth animations with Framer Motion
 
-Simply open [Lovable](https://lovable.dev/projects/7b5a2268-d3ba-44ac-b99d-b42ea26025de) and click on Share -> Publish.
+## 🤝 Contributing
 
-## Can I connect a custom domain to my Lovable project?
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-Yes, you can!
+## 📝 License
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## 👥 Authors
+
+- [Your Name/Team Name]
+
+## 🙏 Acknowledgments
+
+- Thanks to all contributors and supporters of this project
+- Special thanks to the open-source community for the amazing tools and libraries 
