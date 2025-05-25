@@ -91,6 +91,7 @@ const Index = () => {
   const [challengeTime, setChallengeTime] = useState(0);
   const [showEquationInput, setShowEquationInput] = useState(false);
   const [showTutorials, setShowTutorials] = useState(false);
+  const [showQuickStats, setShowQuickStats] = useState(true);
 
   // Calculate XP required for next level
   const xpToNextLevel = level * 100;
@@ -204,7 +205,7 @@ const Index = () => {
     ctx.clearRect(0, 0, 600, 400);
     
     // Enhanced grid with better visibility
-    ctx.strokeStyle = 'rgba(200, 200, 200, 0.5)';
+    ctx.strokeStyle = 'rgba(200, 200, 200, 0.3)';
     ctx.lineWidth = 1;
     for (let i = 0; i < 600; i += 20) {
       ctx.beginPath();
@@ -220,9 +221,9 @@ const Index = () => {
     }
 
     // Draw shape with enhanced styling
-    ctx.fillStyle = 'rgba(99, 102, 241, 0.2)';
+    ctx.fillStyle = 'rgba(99, 102, 241, 0.15)';
     ctx.strokeStyle = '#6366f1';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 3;
 
     if (currentShape.type === 'triangle') {
       const [a, b, c] = currentShape.vertices;
@@ -237,7 +238,7 @@ const Index = () => {
       // Enhanced vertex handles
       currentShape.vertices.forEach((vertex, index) => {
         ctx.beginPath();
-        ctx.arc(vertex.x, vertex.y, 8, 0, 2 * Math.PI);
+        ctx.arc(vertex.x, vertex.y, 6, 0, 2 * Math.PI);
         ctx.fillStyle = isDragging?.type === 'vertex' && isDragging?.index === index 
           ? '#dc2626' 
           : '#ef4444';
@@ -257,7 +258,7 @@ const Index = () => {
       // Enhanced corner handles
       currentShape.vertices.forEach((vertex, index) => {
         ctx.beginPath();
-        ctx.arc(vertex.x, vertex.y, 8, 0, 2 * Math.PI);
+        ctx.arc(vertex.x, vertex.y, 6, 0, 2 * Math.PI);
         ctx.fillStyle = isDragging?.type === 'vertex' && isDragging?.index === index 
           ? '#dc2626' 
           : '#ef4444';
@@ -276,7 +277,7 @@ const Index = () => {
 
       // Center handle
       ctx.beginPath();
-      ctx.arc(currentShape.center.x, currentShape.center.y, 8, 0, 2 * Math.PI);
+      ctx.arc(currentShape.center.x, currentShape.center.y, 6, 0, 2 * Math.PI);
       ctx.fillStyle = isDragging?.type === 'center' ? '#dc2626' : '#ef4444';
       ctx.fill();
       ctx.strokeStyle = '#dc2626';
@@ -293,7 +294,7 @@ const Index = () => {
 
       // Radius handle
       ctx.beginPath();
-      ctx.arc(currentShape.center.x + currentShape.radius, currentShape.center.y, 8, 0, 2 * Math.PI);
+      ctx.arc(currentShape.center.x + currentShape.radius, currentShape.center.y, 6, 0, 2 * Math.PI);
       ctx.fillStyle = isDragging?.type === 'radius' ? '#059669' : '#10b981';
       ctx.fill();
       ctx.strokeStyle = '#047857';
@@ -319,7 +320,7 @@ const Index = () => {
         const vertex = currentShape.vertices[index];
         const distance = Math.sqrt((mouseX - vertex.x) ** 2 + (mouseY - vertex.y) ** 2);
         
-        if (distance < 16) { // Increased detection radius
+        if (distance < 12) {
           setIsDragging({ type: 'vertex', index });
           setDragOffset({ x: mouseX - vertex.x, y: mouseY - vertex.y });
           return;
@@ -333,11 +334,11 @@ const Index = () => {
       const radiusControlX = currentShape.center.x + currentShape.radius;
       const radiusControlDistance = Math.sqrt((mouseX - radiusControlX) ** 2 + (mouseY - currentShape.center.y) ** 2);
 
-      if (centerDistance < 16) {
+      if (centerDistance < 12) {
         setIsDragging({ type: 'center' });
         setDragOffset({ x: mouseX - currentShape.center.x, y: mouseY - currentShape.center.y });
         return;
-      } else if (radiusControlDistance < 16) {
+      } else if (radiusControlDistance < 12) {
         setIsDragging({ type: 'radius' });
         return;
       }
@@ -358,8 +359,8 @@ const Index = () => {
     const mouseY = (e.clientY - rect.top) * scaleY;
 
     if (isDragging.type === 'vertex' && isDragging.index !== undefined) {
-      const newX = Math.max(10, Math.min(590, mouseX - dragOffset.x));
-      const newY = Math.max(10, Math.min(390, mouseY - dragOffset.y));
+      const newX = Math.max(15, Math.min(585, mouseX - dragOffset.x));
+      const newY = Math.max(15, Math.min(385, mouseY - dragOffset.y));
 
       if (currentShape.type === 'triangle') {
         const newVertices = [...currentShape.vertices] as [Point, Point, Point];
@@ -390,8 +391,8 @@ const Index = () => {
         setCurrentShape({ ...currentShape, vertices: newVertices });
       }
     } else if (isDragging.type === 'center' && currentShape.type === 'circle') {
-      const newX = Math.max(currentShape.radius + 10, Math.min(590 - currentShape.radius, mouseX - dragOffset.x));
-      const newY = Math.max(currentShape.radius + 10, Math.min(390 - currentShape.radius, mouseY - dragOffset.y));
+      const newX = Math.max(currentShape.radius + 15, Math.min(585 - currentShape.radius, mouseX - dragOffset.x));
+      const newY = Math.max(currentShape.radius + 15, Math.min(385 - currentShape.radius, mouseY - dragOffset.y));
       setCurrentShape({ ...currentShape, center: { x: newX, y: newY } });
     } else if (isDragging.type === 'radius' && currentShape.type === 'circle') {
       const maxRadius = Math.min(
@@ -399,8 +400,8 @@ const Index = () => {
         currentShape.center.y,
         600 - currentShape.center.x,
         400 - currentShape.center.y
-      ) - 10;
-      const newRadius = Math.max(20, Math.min(maxRadius, Math.abs(mouseX - currentShape.center.x)));
+      ) - 15;
+      const newRadius = Math.max(25, Math.min(maxRadius, Math.abs(mouseX - currentShape.center.x)));
       setCurrentShape({ ...currentShape, radius: newRadius });
     }
   };
@@ -668,39 +669,66 @@ const Index = () => {
 
   const properties = getShapeProperties();
 
+  // Animation variants for enhanced UI
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.5, ease: "easeOut" }
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+    <motion.div 
+      className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50"
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
+    >
       {/* Enhanced Header with floating animations */}
       <motion.header 
-        className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-6 shadow-2xl relative overflow-hidden"
-        initial={{ y: -50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
+        className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white p-4 shadow-2xl relative overflow-hidden"
+        variants={itemVariants}
       >
         <div className="absolute inset-0 bg-black opacity-10" />
         
-        {/* Floating geometric shapes animation */}
+        {/* Enhanced floating geometric shapes */}
         <div className="absolute inset-0 overflow-hidden">
-          {[...Array(8)].map((_, i) => (
+          {[...Array(12)].map((_, i) => (
             <motion.div
               key={i}
-              className="absolute w-4 h-4 bg-white opacity-20"
+              className="absolute w-3 h-3 bg-white opacity-20"
               style={{
-                left: `${15 + i * 12}%`,
-                top: `${25 + (i % 3) * 30}%`,
-                clipPath: i % 3 === 0 ? 'polygon(50% 0%, 0% 100%, 100% 100%)' : 
-                         i % 3 === 1 ? 'circle(50%)' : 
-                         'rect(0px, 0px, 16px, 16px)'
+                left: `${10 + i * 8}%`,
+                top: `${20 + (i % 4) * 20}%`,
+                clipPath: i % 4 === 0 ? 'polygon(50% 0%, 0% 100%, 100% 100%)' : 
+                         i % 4 === 1 ? 'circle(50%)' : 
+                         i % 4 === 2 ? 'rect(0px, 0px, 12px, 12px)' :
+                         'polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)'
               }}
               animate={{
-                y: [0, -25, 0],
-                rotate: [0, 180, 360],
-                scale: [1, 1.3, 1]
+                y: [0, -30, 0],
+                rotate: [0, 360],
+                scale: [1, 1.4, 1],
+                opacity: [0.2, 0.4, 0.2]
               }}
               transition={{
-                duration: 4 + i * 0.5,
+                duration: 6 + i * 0.3,
                 repeat: Infinity,
-                ease: "easeInOut"
+                ease: "easeInOut",
+                delay: i * 0.2
               }}
             />
           ))}
@@ -711,181 +739,217 @@ const Index = () => {
             <motion.div
               initial={{ x: -50, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
+              transition={{ duration: 0.7, delay: 0.3 }}
             >
-              <h1 className="text-4xl font-bold mb-2 flex items-center">
+              <h1 className="text-3xl font-bold mb-1 flex items-center">
                 🔺 Shape Explorer: Interactive Geometry Playground 🔵
               </h1>
-              <p className="text-xl text-indigo-100">
+              <p className="text-lg text-indigo-100">
                 Master geometry through hands-on exploration and interactive learning!
               </p>
             </motion.div>
+            
+            {/* Quick Stats Bar */}
             <motion.div 
-              className="text-right"
+              className="flex space-x-4 text-right"
               initial={{ x: 50, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              transition={{ duration: 0.7, delay: 0.4 }}
+              transition={{ duration: 0.7, delay: 0.5 }}
             >
-              <div className="text-sm text-indigo-200">Production Ready</div>
-              <div className="text-2xl font-bold">Level {level}</div>
+              <div className="bg-white bg-opacity-20 rounded-lg p-3 backdrop-blur-sm">
+                <div className="text-xs text-indigo-200">Level</div>
+                <div className="text-xl font-bold">{level}</div>
+              </div>
+              <div className="bg-white bg-opacity-20 rounded-lg p-3 backdrop-blur-sm">
+                <div className="text-xs text-indigo-200">Score</div>
+                <div className="text-xl font-bold">{score.toLocaleString()}</div>
+              </div>
+              <div className="bg-white bg-opacity-20 rounded-lg p-3 backdrop-blur-sm">
+                <div className="text-xs text-indigo-200">Streak</div>
+                <div className="text-xl font-bold">{streak}</div>
+              </div>
             </motion.div>
           </div>
         </div>
       </motion.header>
 
-      <div className="max-w-7xl mx-auto p-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Left Sidebar - Enhanced Game Stats (removed RandomShapeGenerator) */}
+      <div className="max-w-7xl mx-auto p-4">
+        <motion.div 
+          className="grid grid-cols-1 lg:grid-cols-5 gap-4"
+          variants={containerVariants}
+        >
+          {/* Left Sidebar - Compacted */}
           <motion.div 
-            className="lg:col-span-1 space-y-6"
-            initial={{ x: -50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
+            className="lg:col-span-1 space-y-4"
+            variants={itemVariants}
           >
-            <GameStats 
-              score={score} 
-              level={level} 
-              achievements={achievements} 
-              streak={streak} 
-            />
-            
-            <LevelProgress 
-              currentXP={currentXP} 
-              xpToNextLevel={xpToNextLevel} 
-              level={level} 
-            />
-            
+            {/* Compact Game Stats */}
+            <motion.div 
+              className="bg-white rounded-xl shadow-lg p-4 border border-gray-100"
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.2 }}
+            >
+              <h3 className="text-lg font-bold mb-3 text-gray-800 flex items-center">
+                <span className="mr-2">🏆</span> Progress
+              </h3>
+              <LevelProgress 
+                currentXP={currentXP} 
+                xpToNextLevel={xpToNextLevel} 
+                level={level} 
+              />
+              <div className="mt-3 grid grid-cols-2 gap-2 text-sm">
+                <div className="bg-blue-50 p-2 rounded-lg text-center">
+                  <div className="font-bold text-blue-700">{challengesCompleted}</div>
+                  <div className="text-blue-600 text-xs">Completed</div>
+                </div>
+                <div className="bg-green-50 p-2 rounded-lg text-center">
+                  <div className="font-bold text-green-700">{achievements.length}</div>
+                  <div className="text-green-600 text-xs">Achievements</div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Compact Power-Ups */}
             <PowerUps 
               powerUps={powerUps} 
               onUsePowerUp={usePowerUp} 
             />
 
+            {/* Timer */}
             <Timer 
               isActive={challengeMode} 
               onTimeUpdate={setChallengeTime} 
             />
 
-            {/* New Feature Buttons */}
-            <div className="bg-white rounded-xl shadow-xl p-6 border border-gray-100">
-              <h3 className="text-lg font-bold mb-4 text-gray-800 flex items-center">
-                <span className="mr-2">🚀</span> Advanced Features
+            {/* Shape Tools */}
+            <motion.div 
+              className="bg-white rounded-xl shadow-lg p-4 border border-gray-100"
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.2 }}
+            >
+              <h3 className="text-lg font-bold mb-3 text-gray-800 flex items-center">
+                <span className="mr-2">🎯</span> Shape Tools
               </h3>
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 gap-2">
+                <motion.button
+                  onClick={createTriangle}
+                  className={`p-3 rounded-lg font-semibold transition-all ${
+                    currentShape.type === 'triangle'
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg'
+                      : 'bg-gray-50 text-gray-700 hover:bg-blue-50 hover:text-blue-700 border border-gray-200'
+                  }`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  🔺 Triangle
+                </motion.button>
+                <motion.button
+                  onClick={createRectangle}
+                  className={`p-3 rounded-lg font-semibold transition-all ${
+                    currentShape.type === 'rectangle'
+                      ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg'
+                      : 'bg-gray-50 text-gray-700 hover:bg-green-50 hover:text-green-700 border border-gray-200'
+                  }`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  ⬜ Rectangle
+                </motion.button>
+                <motion.button
+                  onClick={createCircle}
+                  className={`p-3 rounded-lg font-semibold transition-all ${
+                    currentShape.type === 'circle'
+                      ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg'
+                      : 'bg-gray-50 text-gray-700 hover:bg-purple-50 hover:text-purple-700 border border-gray-200'
+                  }`}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  ⭕ Circle
+                </motion.button>
+              </div>
+              
+              {/* Shape History */}
+              {shapeHistory.length > 0 && (
+                <div className="mt-4 pt-3 border-t border-gray-200">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2">📚 Recent Shapes</h4>
+                  <div className="space-y-1">
+                    {shapeHistory.slice(-2).map((shape, index) => (
+                      <button
+                        key={index}
+                        onClick={() => loadFromHistory(shape)}
+                        className="w-full p-2 bg-gray-50 hover:bg-gray-100 rounded text-left text-xs transition-colors"
+                      >
+                        {shape.type.charAt(0).toUpperCase() + shape.type.slice(1)} #{shapeHistory.length - index}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </motion.div>
+
+            {/* Feature Buttons */}
+            <motion.div 
+              className="bg-white rounded-xl shadow-lg p-4 border border-gray-100"
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.2 }}
+            >
+              <h3 className="text-lg font-bold mb-3 text-gray-800 flex items-center">
+                <span className="mr-2">🚀</span> Features
+              </h3>
+              <div className="space-y-2">
                 <motion.button
                   onClick={() => setShowEquationInput(true)}
-                  className="w-full p-3 bg-gradient-to-r from-green-100 to-green-200 text-green-700 rounded-lg hover:from-green-200 hover:to-green-300 transition-all font-medium"
+                  className="w-full p-2 bg-gradient-to-r from-green-100 to-green-200 text-green-700 rounded-lg hover:from-green-200 hover:to-green-300 transition-all text-sm font-medium"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  📊 Graph Equations
+                  📊 Equations
                 </motion.button>
-                
                 <motion.button
                   onClick={() => setCompareMode(!compareMode)}
-                  className="w-full p-3 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700 rounded-lg hover:from-blue-200 hover:to-blue-300 transition-all font-medium"
+                  className="w-full p-2 bg-gradient-to-r from-blue-100 to-blue-200 text-blue-700 rounded-lg hover:from-blue-200 hover:to-blue-300 transition-all text-sm font-medium"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
-                  🔄 Compare Shapes
+                  🔄 Compare
                 </motion.button>
-                
                 <motion.button
                   onClick={() => setShowTutorials(true)}
-                  className="w-full p-3 bg-gradient-to-r from-purple-100 to-purple-200 text-purple-700 rounded-lg hover:from-purple-200 hover:to-purple-300 transition-all font-medium"
+                  className="w-full p-2 bg-gradient-to-r from-purple-100 to-purple-200 text-purple-700 rounded-lg hover:from-purple-200 hover:to-purple-300 transition-all text-sm font-medium"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                 >
                   🎓 Tutorials
                 </motion.button>
               </div>
-            </div>
-
-            {/* Enhanced Shape Selection */}
-            <div className="bg-white rounded-xl shadow-xl p-6 border border-gray-100">
-              <h3 className="text-xl font-bold mb-4 text-gray-800 flex items-center">
-                <span className="mr-2">🎯</span> Shape Toolkit
-              </h3>
-              <div className="space-y-3">
-                <motion.button
-                  onClick={createTriangle}
-                  className={`w-full p-4 rounded-xl font-semibold transition-all transform ${
-                    currentShape.type === 'triangle'
-                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg scale-105'
-                      : 'bg-gray-50 text-gray-700 hover:bg-blue-50 hover:text-blue-700 hover:scale-102 border-2 border-gray-200 hover:border-blue-300'
-                  }`}
-                  whileHover={{ scale: currentShape.type !== 'triangle' ? 1.02 : 1.05 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  🔺 Triangle Explorer
-                </motion.button>
-                <motion.button
-                  onClick={createRectangle}
-                  className={`w-full p-4 rounded-xl font-semibold transition-all transform ${
-                    currentShape.type === 'rectangle'
-                      ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg scale-105'
-                      : 'bg-gray-50 text-gray-700 hover:bg-green-50 hover:text-green-700 hover:scale-102 border-2 border-gray-200 hover:border-green-300'
-                  }`}
-                  whileHover={{ scale: currentShape.type !== 'rectangle' ? 1.02 : 1.05 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  ⬜ Rectangle Builder
-                </motion.button>
-                <motion.button
-                  onClick={createCircle}
-                  className={`w-full p-4 rounded-xl font-semibold transition-all transform ${
-                    currentShape.type === 'circle'
-                      ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg scale-105'
-                      : 'bg-gray-50 text-gray-700 hover:bg-purple-50 hover:text-purple-700 hover:scale-102 border-2 border-gray-200 hover:border-purple-300'
-                  }`}
-                  whileHover={{ scale: currentShape.type !== 'circle' ? 1.02 : 1.05 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  ⭕ Circle Crafter
-                </motion.button>
-              </div>
-            </div>
-
-            {/* Shape History */}
-            {shapeHistory.length > 0 && (
-              <div className="bg-white rounded-xl shadow-xl p-6 border border-gray-100">
-                <h3 className="text-lg font-bold mb-4 text-gray-800 flex items-center">
-                  <span className="mr-2">📚</span> Shape History
-                </h3>
-                <div className="space-y-2">
-                  {shapeHistory.slice(-3).map((shape, index) => (
-                    <button
-                      key={index}
-                      onClick={() => loadFromHistory(shape)}
-                      className="w-full p-3 bg-gray-50 hover:bg-gray-100 rounded-lg text-left text-sm transition-colors"
-                    >
-                      {shape.type.charAt(0).toUpperCase() + shape.type.slice(1)} #{shapeHistory.length - index}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+            </motion.div>
           </motion.div>
 
           {/* Main Canvas Area */}
           <motion.div 
-            className="lg:col-span-2"
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            className="lg:col-span-3"
+            variants={itemVariants}
           >
-            <div className="bg-white rounded-2xl shadow-2xl p-8 relative overflow-hidden border border-gray-100">
+            <motion.div 
+              className="bg-white rounded-2xl shadow-2xl p-6 relative overflow-hidden border border-gray-100"
+              whileHover={{ scale: 1.001 }}
+              transition={{ duration: 0.3 }}
+            >
               <div className="absolute top-0 left-0 w-full h-3 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-t-2xl"></div>
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-3xl font-bold text-gray-800 flex items-center">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold text-gray-800 flex items-center">
                   <span className="mr-3">🎨</span> Interactive Canvas
                 </h2>
                 <div className="flex space-x-3">
-                  <button
+                  <motion.button
                     onClick={saveToHistory}
                     className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors text-sm font-medium"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    📝 Save Shape
-                  </button>
+                    📝 Save
+                  </motion.button>
                   {activePowerUp && (
                     <motion.span 
                       className="px-4 py-2 bg-yellow-100 text-yellow-800 rounded-lg text-sm font-medium"
@@ -899,7 +963,7 @@ const Index = () => {
               </div>
               
               <div className="relative">
-                <canvas
+                <motion.canvas
                   ref={canvasRef}
                   width={600}
                   height={400}
@@ -908,9 +972,11 @@ const Index = () => {
                   onMouseMove={handleMouseMove}
                   onMouseUp={handleMouseUp}
                   onMouseLeave={handleMouseUp}
+                  whileHover={{ scale: 1.002 }}
+                  transition={{ duration: 0.2 }}
                 />
                 <motion.div 
-                  className="absolute top-4 left-4 bg-white bg-opacity-95 rounded-xl p-4 text-sm text-gray-700 shadow-lg backdrop-blur-sm"
+                  className="absolute top-4 left-4 bg-white bg-opacity-95 rounded-xl p-3 text-sm text-gray-700 shadow-lg backdrop-blur-sm"
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
@@ -921,14 +987,12 @@ const Index = () => {
                   </div>
                 </motion.div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Graph Visualization */}
             <motion.div
-              className="mt-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
+              className="mt-4"
+              variants={itemVariants}
             >
               <GraphVisualization 
                 shapeType={currentShape.type} 
@@ -937,47 +1001,50 @@ const Index = () => {
             </motion.div>
 
             {/* Shape Comparison */}
-            {compareMode && (
-              <motion.div
-                className="mt-6"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <ShapeComparison 
-                  currentShape={currentShape}
-                  shapeHistory={shapeHistory}
-                />
-              </motion.div>
-            )}
+            <AnimatePresence>
+              {compareMode && (
+                <motion.div
+                  className="mt-4"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <ShapeComparison 
+                    currentShape={currentShape}
+                    shapeHistory={shapeHistory}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
 
           {/* Right Sidebar - Enhanced Properties & Challenges */}
           <motion.div 
-            className="lg:col-span-1 space-y-6"
-            initial={{ x: 50, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
+            className="lg:col-span-1 space-y-4"
+            variants={itemVariants}
           >
             {/* Enhanced Properties Display */}
             <motion.div 
-              className="bg-white rounded-xl shadow-xl p-6 border border-gray-100"
+              className="bg-white rounded-xl shadow-lg p-4 border border-gray-100"
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.2 }}
               layout
             >
-              <h3 className="text-xl font-bold mb-6 text-gray-800 flex items-center">
-                <span className="mr-2">📊</span> Shape Analytics
+              <h3 className="text-lg font-bold mb-4 text-gray-800 flex items-center">
+                <span className="mr-2">📊</span> Analytics
               </h3>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <motion.div 
-                  className="bg-gradient-to-r from-blue-50 to-blue-100 p-5 rounded-xl border-l-4 border-blue-500"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-xl border-l-4 border-blue-500"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
                   key={`area-${properties.area}`}
                 >
                   <div className="text-sm font-semibold text-blue-700 flex items-center">
                     <span className="mr-2">📐</span> Area
                   </div>
-                  <div className="text-2xl font-bold text-blue-900">
+                  <div className="text-xl font-bold text-blue-900">
                     {properties.area.toFixed(1)} sq units
                   </div>
                   <div className="text-xs text-blue-600 mt-1">
@@ -988,15 +1055,15 @@ const Index = () => {
                 </motion.div>
 
                 <motion.div 
-                  className="bg-gradient-to-r from-green-50 to-green-100 p-5 rounded-xl border-l-4 border-green-500"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-xl border-l-4 border-green-500"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
                   key={`perimeter-${properties.perimeter || (properties as any).circumference}`}
                 >
                   <div className="text-sm font-semibold text-green-700 flex items-center">
                     <span className="mr-2">📏</span> {currentShape.type === 'circle' ? 'Circumference' : 'Perimeter'}
                   </div>
-                  <div className="text-2xl font-bold text-green-900">
+                  <div className="text-xl font-bold text-green-900">
                     {((properties.perimeter || (properties as any).circumference) || 0).toFixed(1)} units
                   </div>
                   <div className="text-xs text-green-600 mt-1">
@@ -1006,98 +1073,102 @@ const Index = () => {
                   </div>
                 </motion.div>
 
+                {/* Additional Properties for Triangles */}
                 {currentShape.type === 'triangle' && (properties as any).angles && (
                   <motion.div 
-                    className="bg-gradient-to-r from-yellow-50 to-yellow-100 p-5 rounded-xl border-l-4 border-yellow-500"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-gradient-to-r from-yellow-50 to-yellow-100 p-4 rounded-xl border-l-4 border-yellow-500"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
                   >
                     <div className="text-sm font-semibold text-yellow-700 flex items-center">
-                      <span className="mr-2">📐</span> Angles & Properties
+                      <span className="mr-2">📐</span> Angles
                     </div>
-                    <div className="text-sm font-bold text-yellow-900 space-y-1">
-                      {(properties as any).angles.map((angle: number, index: number) => (
+                    <div className="text-xs font-bold text-yellow-900 space-y-1">
+                      {(properties as any).angles.slice(0, 2).map((angle: number, index: number) => (
                         <div key={index}>∠{index + 1}: {angle.toFixed(1)}°</div>
                       ))}
                     </div>
-                    <div className="text-xs text-yellow-600 mt-2 space-y-1">
-                      <div>Sum: {(properties as any).angles.reduce((sum: number, angle: number) => sum + angle, 0).toFixed(1)}°</div>
-                      {(properties as any).isRightTriangle && <div className="text-orange-600 font-medium">✓ Right Triangle!</div>}
-                      {(properties as any).isEquilateral && <div className="text-purple-600 font-medium">✓ Equilateral!</div>}
-                    </div>
+                    {(properties as any).isRightTriangle && <div className="text-orange-600 font-medium text-xs mt-1">✓ Right Triangle!</div>}
+                    {(properties as any).isEquilateral && <div className="text-purple-600 font-medium text-xs mt-1">✓ Equilateral!</div>}
                   </motion.div>
                 )}
 
+                {/* Additional Properties for Rectangles */}
                 {currentShape.type === 'rectangle' && (
                   <motion.div 
-                    className="bg-gradient-to-r from-purple-50 to-purple-100 p-5 rounded-xl border-l-4 border-purple-500"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-xl border-l-4 border-purple-500"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
                   >
                     <div className="text-sm font-semibold text-purple-700 flex items-center">
                       <span className="mr-2">📏</span> Dimensions
                     </div>
-                    <div className="text-sm font-bold text-purple-900 space-y-1">
-                      <div>Width: {(properties as any).width.toFixed(1)} units</div>
-                      <div>Height: {(properties as any).height.toFixed(1)} units</div>
+                    <div className="text-xs font-bold text-purple-900 space-y-1">
+                      <div>W: {(properties as any).width.toFixed(1)} units</div>
+                      <div>H: {(properties as any).height.toFixed(1)} units</div>
                       <div>Ratio: {(properties as any).ratio.toFixed(2)}:1</div>
                     </div>
                     {(properties as any).isSquare && (
-                      <div className="text-xs text-purple-600 mt-2 font-medium">✓ Perfect Square!</div>
+                      <div className="text-purple-600 font-medium text-xs mt-1">✓ Perfect Square!</div>
                     )}
                   </motion.div>
                 )}
               </div>
             </motion.div>
 
-            <div className="bg-white rounded-xl shadow-xl p-6 border border-gray-100">
-              <h3 className="text-xl font-bold mb-6 text-gray-800 flex items-center">
-                <span className="mr-2">🎯</span> Challenge Hub
+            {/* Challenge Hub */}
+            <motion.div 
+              className="bg-white rounded-xl shadow-lg p-4 border border-gray-100"
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.2 }}
+            >
+              <h3 className="text-lg font-bold mb-4 text-gray-800 flex items-center">
+                <span className="mr-2">🎯</span> Challenges
               </h3>
               {!challengeMode ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   <motion.button
                     onClick={() => startChallenge('easy')}
-                    className="w-full p-4 bg-gradient-to-r from-green-400 to-green-500 text-white rounded-xl font-bold text-lg hover:from-green-500 hover:to-green-600 transition-all shadow-lg"
+                    className="w-full p-3 bg-gradient-to-r from-green-400 to-green-500 text-white rounded-lg font-bold hover:from-green-500 hover:to-green-600 transition-all shadow-lg text-sm"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    🟢 Easy Challenge
+                    🟢 Easy
                   </motion.button>
                   <motion.button
                     onClick={() => startChallenge('medium')}
-                    className="w-full p-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-xl font-bold text-lg hover:from-yellow-500 hover:to-orange-600 transition-all shadow-lg"
+                    className="w-full p-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-lg font-bold hover:from-yellow-500 hover:to-orange-600 transition-all shadow-lg text-sm"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    🟡 Medium Challenge
+                    🟡 Medium
                   </motion.button>
                   <motion.button
                     onClick={() => startChallenge('hard')}
-                    className="w-full p-4 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-xl font-bold text-lg hover:from-red-600 hover:to-pink-600 transition-all shadow-lg"
+                    className="w-full p-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg font-bold hover:from-red-600 hover:to-pink-600 transition-all shadow-lg text-sm"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    🔴 Hard Challenge
+                    🔴 Hard
                   </motion.button>
                   <motion.button
                     onClick={() => startChallenge()}
-                    className="w-full p-4 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-xl font-bold text-lg hover:from-purple-600 hover:to-indigo-600 transition-all shadow-lg"
+                    className="w-full p-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-lg font-bold hover:from-purple-600 hover:to-indigo-600 transition-all shadow-lg text-sm"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
-                    🎲 Random Challenge
+                    🎲 Random
                   </motion.button>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <div className="bg-gradient-to-r from-orange-50 to-red-50 p-5 rounded-xl border-l-4 border-orange-500">
+                <div className="space-y-3">
+                  <div className="bg-gradient-to-r from-orange-50 to-red-50 p-4 rounded-xl border-l-4 border-orange-500">
                     <div className="text-sm font-semibold text-orange-700 mb-2 flex items-center">
-                      <span className="mr-2">🎯</span> {currentChallenge?.difficulty.toUpperCase()} Challenge:
+                      <span className="mr-2">🎯</span> {currentChallenge?.difficulty.toUpperCase()}
                     </div>
-                    <div className="text-sm text-orange-900 font-semibold mb-3">{currentChallenge?.description}</div>
+                    <div className="text-xs text-orange-900 font-semibold mb-2">{currentChallenge?.description}</div>
                     <div className="text-xs text-orange-600 flex justify-between items-center">
-                      <span>Streak: {streak} | Completed: {challengesCompleted}</span>
+                      <span>Streak: {streak}</span>
                       <span className="px-2 py-1 bg-orange-200 text-orange-800 rounded-full font-medium">
                         {currentChallenge?.category}
                       </span>
@@ -1105,7 +1176,7 @@ const Index = () => {
                   </div>
                   <motion.button
                     onClick={() => setChallengeMode(false)}
-                    className="w-full p-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-all font-medium"
+                    className="w-full p-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all font-medium text-sm"
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -1113,31 +1184,66 @@ const Index = () => {
                   </motion.button>
                 </div>
               )}
-            </div>
+            </motion.div>
+
+            {/* Quick Actions */}
+            <motion.div 
+              className="bg-white rounded-xl shadow-lg p-4 border border-gray-100"
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.2 }}
+            >
+              <h3 className="text-lg font-bold mb-3 text-gray-800 flex items-center">
+                <span className="mr-2">⚡</span> Quick Actions
+              </h3>
+              <div className="space-y-2">
+                <motion.button
+                  onClick={() => setShowMathFacts(true)}
+                  className="w-full p-2 bg-gradient-to-r from-indigo-100 to-indigo-200 text-indigo-700 rounded-lg hover:from-indigo-200 hover:to-indigo-300 transition-all text-sm font-medium"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  🧠 Math Facts
+                </motion.button>
+                <motion.button
+                  onClick={() => {
+                    setCurrentShape({
+                      type: 'triangle',
+                      vertices: [
+                        { x: 100 + Math.random() * 400, y: 80 + Math.random() * 240 },
+                        { x: 100 + Math.random() * 400, y: 80 + Math.random() * 240 },
+                        { x: 100 + Math.random() * 400, y: 80 + Math.random() * 240 }
+                      ]
+                    });
+                  }}
+                  className="w-full p-2 bg-gradient-to-r from-pink-100 to-pink-200 text-pink-700 rounded-lg hover:from-pink-200 hover:to-pink-300 transition-all text-sm font-medium"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  🎲 Random Shape
+                </motion.button>
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </div>
 
-      {/* Math Facts Modal */}
+      {/* Modals */}
       <MathFacts 
         shapeType={currentMathFactsShape}
         isVisible={showMathFacts}
         onClose={() => setShowMathFacts(false)}
       />
 
-      {/* Equation Input Modal */}
       <EquationInput 
         isVisible={showEquationInput}
         onClose={() => setShowEquationInput(false)}
       />
 
-      {/* Geometry Tutorials Modal */}
       <GeometryTutorials 
         isVisible={showTutorials}
         onClose={() => setShowTutorials(false)}
       />
 
-      {/* Achievement Banner */}
       <AchievementBanner 
         achievement={newAchievement} 
         onClose={() => setNewAchievement(null)} 
@@ -1147,11 +1253,11 @@ const Index = () => {
       <AnimatePresence>
         {showFeedback && (
           <motion.div
-            className="fixed top-24 right-6 bg-white border-l-4 border-blue-500 rounded-xl shadow-2xl p-6 max-w-sm z-40 backdrop-blur-sm"
-            initial={{ x: 400, opacity: 0, scale: 0.8 }}
-            animate={{ x: 0, opacity: 1, scale: 1 }}
-            exit={{ x: 400, opacity: 0, scale: 0.8 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed top-24 right-6 bg-white border-l-4 border-blue-500 rounded-xl shadow-2xl p-6 max-w-sm z-50 backdrop-blur-sm"
+            initial={{ x: 400, opacity: 0, scale: 0.8, rotate: 10 }}
+            animate={{ x: 0, opacity: 1, scale: 1, rotate: 0 }}
+            exit={{ x: 400, opacity: 0, scale: 0.8, rotate: -10 }}
+            transition={{ type: "spring", stiffness: 300, damping: 25 }}
           >
             <div className="text-lg font-semibold text-gray-800">{feedback}</div>
             {activePowerUp === 'doublePoints' && (
@@ -1160,7 +1266,7 @@ const Index = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 };
 
