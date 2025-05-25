@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { X, Calculator, Function } from 'lucide-react';
+import { X, Calculator, ChartLine } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface EquationInputProps {
@@ -92,7 +91,7 @@ const EquationInput = ({ isVisible, onClose }: EquationInputProps) => {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
             <div className="bg-blue-100 p-3 rounded-full mr-4">
-              <Function className="w-8 h-8 text-blue-600" />
+              <ChartLine className="w-8 h-8 text-blue-600" />
             </div>
             <h3 className="text-2xl font-bold text-gray-800">Equation Grapher</h3>
           </div>
@@ -204,7 +203,7 @@ const EquationInput = ({ isVisible, onClose }: EquationInputProps) => {
               ) : (
                 <div className="flex items-center justify-center h-full text-gray-500">
                   <div className="text-center">
-                    <Function className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <ChartLine className="w-12 h-12 mx-auto mb-2 opacity-50" />
                     <p>Enter an equation to see its graph</p>
                   </div>
                 </div>
