@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { X, Calculator, ChartLine } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 
 interface EquationInputProps {
   isVisible: boolean;
@@ -204,22 +203,38 @@ const EquationInput = ({ isVisible, onClose }: EquationInputProps) => {
             </h4>
             <div className="h-96 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl p-6 border-2 border-gray-200">
               {graphData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" aspect={1}>
                   <LineChart data={graphData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                    {/* Dense, subtle grid */}
+                    <CartesianGrid stroke="#bbb" strokeDasharray="1 3" vertical={true} horizontal={true} />
+                    {/* X Axis */}
                     <XAxis 
                       dataKey="x" 
-                      stroke="#666"
+                      stroke="#111"
                       fontSize={14}
-                      domain={['dataMin', 'dataMax']}
+                      domain={[-12, 12]}
+                      tickCount={9}
+                      interval={0}
+                      ticks={[-8, -6, -4, -2, 0, 2, 4, 6, 8]}
+                      axisLine={{ stroke: '#111', strokeWidth: 2 }}
+                      tickLine={{ stroke: '#111', strokeWidth: 1 }}
                       label={{ value: 'x', position: 'insideBottom', offset: -10 }}
+                      allowDataOverflow={true}
                     />
+                    {/* Y Axis */}
                     <YAxis 
-                      stroke="#666" 
+                      stroke="#111" 
                       fontSize={14}
-                      domain={['dataMin', 'dataMax']}
+                      domain={[-8, 8]}
+                      tickCount={9}
+                      axisLine={{ stroke: '#111', strokeWidth: 2 }}
+                      tickLine={{ stroke: '#111', strokeWidth: 1 }}
                       label={{ value: 'y', angle: -90, position: 'insideLeft' }}
+                      allowDataOverflow={true}
                     />
+                    {/* Bold axes */}
+                    <ReferenceLine x={0} stroke="#000" strokeWidth={4} />
+                    <ReferenceLine y={0} stroke="#000" strokeWidth={4} />
                     <Tooltip 
                       contentStyle={{ 
                         backgroundColor: '#f8fafc', 

@@ -203,8 +203,8 @@ const Index = () => {
   const drawShape = (ctx: CanvasRenderingContext2D) => {
     ctx.clearRect(0, 0, 600, 400);
     
-    // Grid
-    ctx.strokeStyle = 'rgba(200, 200, 200, 0.3)';
+    // Enhanced grid with better visibility
+    ctx.strokeStyle = 'rgba(200, 200, 200, 0.5)';
     ctx.lineWidth = 1;
     for (let i = 0; i < 600; i += 20) {
       ctx.beginPath();
@@ -219,8 +219,8 @@ const Index = () => {
       ctx.stroke();
     }
 
-    // Draw shape
-    ctx.fillStyle = 'rgba(99, 102, 241, 0.3)';
+    // Draw shape with enhanced styling
+    ctx.fillStyle = 'rgba(99, 102, 241, 0.2)';
     ctx.strokeStyle = '#6366f1';
     ctx.lineWidth = 2;
 
@@ -234,11 +234,13 @@ const Index = () => {
       ctx.fill();
       ctx.stroke();
 
-      // Draw vertex handles
+      // Enhanced vertex handles
       currentShape.vertices.forEach((vertex, index) => {
         ctx.beginPath();
-        ctx.arc(vertex.x, vertex.y, 6, 0, 2 * Math.PI);
-        ctx.fillStyle = isDragging?.type === 'vertex' && isDragging?.index === index ? '#dc2626' : '#ef4444';
+        ctx.arc(vertex.x, vertex.y, 8, 0, 2 * Math.PI);
+        ctx.fillStyle = isDragging?.type === 'vertex' && isDragging?.index === index 
+          ? '#dc2626' 
+          : '#ef4444';
         ctx.fill();
         ctx.strokeStyle = '#dc2626';
         ctx.lineWidth = 2;
@@ -252,11 +254,13 @@ const Index = () => {
       ctx.fill();
       ctx.stroke();
 
-      // Draw corner handles
+      // Enhanced corner handles
       currentShape.vertices.forEach((vertex, index) => {
         ctx.beginPath();
-        ctx.arc(vertex.x, vertex.y, 6, 0, 2 * Math.PI);
-        ctx.fillStyle = isDragging?.type === 'vertex' && isDragging?.index === index ? '#dc2626' : '#ef4444';
+        ctx.arc(vertex.x, vertex.y, 8, 0, 2 * Math.PI);
+        ctx.fillStyle = isDragging?.type === 'vertex' && isDragging?.index === index 
+          ? '#dc2626' 
+          : '#ef4444';
         ctx.fill();
         ctx.strokeStyle = '#dc2626';
         ctx.lineWidth = 2;
@@ -264,6 +268,7 @@ const Index = () => {
       });
 
     } else {
+      // Enhanced circle drawing
       ctx.beginPath();
       ctx.arc(currentShape.center.x, currentShape.center.y, currentShape.radius, 0, 2 * Math.PI);
       ctx.fill();
@@ -271,13 +276,24 @@ const Index = () => {
 
       // Center handle
       ctx.beginPath();
-      ctx.arc(currentShape.center.x, currentShape.center.y, 6, 0, 2 * Math.PI);
+      ctx.arc(currentShape.center.x, currentShape.center.y, 8, 0, 2 * Math.PI);
       ctx.fillStyle = isDragging?.type === 'center' ? '#dc2626' : '#ef4444';
       ctx.fill();
+      ctx.strokeStyle = '#dc2626';
+      ctx.lineWidth = 2;
+      ctx.stroke();
 
-      // Radius control
+      // Radius control with line
       ctx.beginPath();
-      ctx.arc(currentShape.center.x + currentShape.radius, currentShape.center.y, 6, 0, 2 * Math.PI);
+      ctx.moveTo(currentShape.center.x, currentShape.center.y);
+      ctx.lineTo(currentShape.center.x + currentShape.radius, currentShape.center.y);
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Radius handle
+      ctx.beginPath();
+      ctx.arc(currentShape.center.x + currentShape.radius, currentShape.center.y, 8, 0, 2 * Math.PI);
       ctx.fillStyle = isDragging?.type === 'radius' ? '#059669' : '#10b981';
       ctx.fill();
       ctx.strokeStyle = '#047857';
@@ -292,20 +308,20 @@ const Index = () => {
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    console.log('Mouse down at:', mouseX, mouseY);
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    const mouseX = (e.clientX - rect.left) * scaleX;
+    const mouseY = (e.clientY - rect.top) * scaleY;
 
     if (currentShape.type === 'triangle' || currentShape.type === 'rectangle') {
       for (let index = 0; index < currentShape.vertices.length; index++) {
         const vertex = currentShape.vertices[index];
         const distance = Math.sqrt((mouseX - vertex.x) ** 2 + (mouseY - vertex.y) ** 2);
         
-        if (distance < 12) { // Increased detection radius
+        if (distance < 16) { // Increased detection radius
           setIsDragging({ type: 'vertex', index });
           setDragOffset({ x: mouseX - vertex.x, y: mouseY - vertex.y });
-          console.log('Started dragging vertex', index);
           return;
         }
       }
@@ -317,14 +333,12 @@ const Index = () => {
       const radiusControlX = currentShape.center.x + currentShape.radius;
       const radiusControlDistance = Math.sqrt((mouseX - radiusControlX) ** 2 + (mouseY - currentShape.center.y) ** 2);
 
-      if (centerDistance < 12) {
+      if (centerDistance < 16) {
         setIsDragging({ type: 'center' });
         setDragOffset({ x: mouseX - currentShape.center.x, y: mouseY - currentShape.center.y });
-        console.log('Started dragging center');
         return;
-      } else if (radiusControlDistance < 12) {
+      } else if (radiusControlDistance < 16) {
         setIsDragging({ type: 'radius' });
-        console.log('Started dragging radius');
         return;
       }
     }
@@ -337,8 +351,11 @@ const Index = () => {
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    const mouseX = (e.clientX - rect.left) * scaleX;
+    const mouseY = (e.clientY - rect.top) * scaleY;
 
     if (isDragging.type === 'vertex' && isDragging.index !== undefined) {
       const newX = Math.max(10, Math.min(590, mouseX - dragOffset.x));
