@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { X, Calculator, ChartLine } from 'lucide-react';
@@ -65,14 +66,14 @@ const EquationInput = ({ isVisible, onClose }: EquationInputProps) => {
   };
 
   const presetEquations = [
-    { name: 'Linear', equation: '2*x + 1', description: 'y = 2x + 1' },
-    { name: 'Quadratic', equation: 'x*x - 4', description: 'y = x² - 4' },
-    { name: 'Cubic', equation: 'x*x*x - 3*x', description: 'y = x³ - 3x' },
-    { name: 'Sine Wave', equation: 'sin(x)', description: 'y = sin(x)' },
-    { name: 'Cosine Wave', equation: 'cos(x)', description: 'y = cos(x)' },
-    { name: 'Exponential', equation: '2**x', description: 'y = 2^x' },
-    { name: 'Square Root', equation: 'sqrt(x)', description: 'y = √x' },
-    { name: 'Absolute Value', equation: 'abs(x)', description: 'y = |x|' }
+    { name: 'Linear', equation: '2*x + 1', description: 'y = 2x + 1', formula: 'y = mx + b (Slope-intercept form)' },
+    { name: 'Quadratic', equation: 'x*x - 4', description: 'y = x² - 4', formula: 'y = ax² + bx + c (Standard form)' },
+    { name: 'Cubic', equation: 'x*x*x - 3*x', description: 'y = x³ - 3x', formula: 'y = ax³ + bx² + cx + d' },
+    { name: 'Sine Wave', equation: 'sin(x)', description: 'y = sin(x)', formula: 'y = A·sin(Bx + C) + D' },
+    { name: 'Cosine Wave', equation: 'cos(x)', description: 'y = cos(x)', formula: 'y = A·cos(Bx + C) + D' },
+    { name: 'Exponential', equation: '2**x', description: 'y = 2^x', formula: 'y = a·b^x (exponential growth)' },
+    { name: 'Square Root', equation: 'sqrt(x)', description: 'y = √x', formula: 'y = √(ax + b)' },
+    { name: 'Absolute Value', equation: 'abs(x)', description: 'y = |x|', formula: 'y = |ax + b|' }
   ];
 
   return (
@@ -83,7 +84,7 @@ const EquationInput = ({ isVisible, onClose }: EquationInputProps) => {
       transition={{ duration: 0.3 }}
     >
       <motion.div
-        className="bg-white rounded-2xl p-8 max-w-4xl mx-4 shadow-2xl max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-2xl p-8 max-w-6xl mx-4 shadow-2xl max-h-[95vh] overflow-y-auto"
         initial={{ scale: 0.8, y: 50 }}
         animate={{ scale: isVisible ? 1 : 0.8, y: isVisible ? 0 : 50 }}
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
@@ -93,7 +94,7 @@ const EquationInput = ({ isVisible, onClose }: EquationInputProps) => {
             <div className="bg-blue-100 p-3 rounded-full mr-4">
               <ChartLine className="w-8 h-8 text-blue-600" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800">Equation Grapher</h3>
+            <h3 className="text-3xl font-bold text-gray-800">Interactive Equation Grapher</h3>
           </div>
           <button
             onClick={onClose}
@@ -106,66 +107,102 @@ const EquationInput = ({ isVisible, onClose }: EquationInputProps) => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Input Section */}
           <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Enter your equation (use 'x' as variable):
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200">
+              <label className="block text-lg font-bold text-gray-800 mb-3">
+                ✏️ Enter your equation (use 'x' as variable):
               </label>
-              <div className="flex space-x-2">
+              <div className="flex space-x-2 mb-4">
                 <input
                   type="text"
                   value={equation}
                   onChange={(e) => setEquation(e.target.value)}
                   placeholder="e.g., x*x + 2*x + 1"
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="flex-1 px-4 py-3 text-lg border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   onKeyPress={(e) => e.key === 'Enter' && generateGraph()}
                 />
-                <button
+                <motion.button
                   onClick={generateGraph}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+                  className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-colors flex items-center font-semibold"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  <Calculator className="w-4 h-4 mr-2" />
-                  Graph
-                </button>
+                  <Calculator className="w-5 h-5 mr-2" />
+                  Graph It!
+                </motion.button>
               </div>
               {error && (
-                <p className="text-red-600 text-sm mt-2">{error}</p>
+                <motion.p 
+                  className="text-red-600 text-sm font-medium bg-red-50 p-3 rounded-lg border border-red-200"
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  ⚠️ {error}
+                </motion.p>
               )}
             </div>
 
             <div>
-              <h4 className="text-lg font-semibold text-gray-800 mb-3">Preset Equations:</h4>
-              <div className="grid grid-cols-2 gap-2">
+              <h4 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <span className="mr-2">📚</span>Preset Equations & Formulas:
+              </h4>
+              <div className="grid grid-cols-1 gap-3">
                 {presetEquations.map((preset, index) => (
-                  <button
+                  <motion.button
                     key={index}
                     onClick={() => {
                       setEquation(preset.equation);
                       setError('');
                     }}
-                    className="p-3 bg-gray-50 hover:bg-gray-100 rounded-lg text-left transition-colors"
+                    className="p-4 bg-gray-50 hover:bg-blue-50 rounded-xl text-left transition-all border-2 border-gray-200 hover:border-blue-300"
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
                   >
-                    <div className="font-medium text-gray-800">{preset.name}</div>
-                    <div className="text-sm text-gray-600">{preset.description}</div>
-                  </button>
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="font-bold text-gray-800">{preset.name}</div>
+                      <div className="text-sm text-blue-600 font-mono bg-blue-100 px-2 py-1 rounded">
+                        {preset.description}
+                      </div>
+                    </div>
+                    <div className="text-sm text-gray-600 italic">
+                      📐 General form: {preset.formula}
+                    </div>
+                  </motion.button>
                 ))}
               </div>
             </div>
 
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h4 className="font-semibold text-blue-800 mb-2">Supported Functions:</h4>
-              <div className="text-sm text-blue-700 space-y-1">
-                <div>• Basic operations: +, -, *, /</div>
-                <div>• Powers: x^2 or x**2</div>
-                <div>• Trigonometric: sin(x), cos(x), tan(x)</div>
-                <div>• Other: sqrt(x), abs(x), log(x)</div>
+            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-6 rounded-xl border border-yellow-200">
+              <h4 className="font-bold text-yellow-800 mb-3 flex items-center">
+                <span className="mr-2">💡</span>Supported Mathematical Functions:
+              </h4>
+              <div className="text-sm text-yellow-700 space-y-2">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="font-semibold">Basic Operations:</div>
+                    <div>• Addition: +</div>
+                    <div>• Subtraction: -</div>
+                    <div>• Multiplication: *</div>
+                    <div>• Division: /</div>
+                    <div>• Powers: x^2 or x**2</div>
+                  </div>
+                  <div>
+                    <div className="font-semibold">Advanced Functions:</div>
+                    <div>• Trigonometric: sin(x), cos(x), tan(x)</div>
+                    <div>• Square root: sqrt(x)</div>
+                    <div>• Absolute value: abs(x)</div>
+                    <div>• Natural log: log(x)</div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Graph Section */}
           <div>
-            <h4 className="text-lg font-semibold text-gray-800 mb-3">Graph Visualization:</h4>
-            <div className="h-80 bg-gray-50 rounded-lg p-4">
+            <h4 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+              <span className="mr-2">📊</span>Graph Visualization:
+            </h4>
+            <div className="h-96 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl p-6 border-2 border-gray-200">
               {graphData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={graphData}>
@@ -173,28 +210,31 @@ const EquationInput = ({ isVisible, onClose }: EquationInputProps) => {
                     <XAxis 
                       dataKey="x" 
                       stroke="#666"
-                      fontSize={12}
+                      fontSize={14}
                       domain={['dataMin', 'dataMax']}
+                      label={{ value: 'x', position: 'insideBottom', offset: -10 }}
                     />
                     <YAxis 
                       stroke="#666" 
-                      fontSize={12}
+                      fontSize={14}
                       domain={['dataMin', 'dataMax']}
+                      label={{ value: 'y', angle: -90, position: 'insideLeft' }}
                     />
                     <Tooltip 
                       contentStyle={{ 
                         backgroundColor: '#f8fafc', 
-                        border: '1px solid #e2e8f0',
-                        borderRadius: '8px'
+                        border: '2px solid #e2e8f0',
+                        borderRadius: '12px',
+                        fontWeight: 'bold'
                       }}
-                      formatter={(value, name) => [Number(value).toFixed(2), 'y']}
-                      labelFormatter={(label) => `x = ${Number(label).toFixed(2)}`}
+                      formatter={(value, name) => [Number(value).toFixed(3), 'y-value']}
+                      labelFormatter={(label) => `x = ${Number(label).toFixed(3)}`}
                     />
                     <Line
                       type="monotone"
                       dataKey="y"
                       stroke="#3b82f6"
-                      strokeWidth={3}
+                      strokeWidth={4}
                       dot={false}
                       connectNulls={false}
                     />
@@ -203,24 +243,42 @@ const EquationInput = ({ isVisible, onClose }: EquationInputProps) => {
               ) : (
                 <div className="flex items-center justify-center h-full text-gray-500">
                   <div className="text-center">
-                    <ChartLine className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p>Enter an equation to see its graph</p>
+                    <ChartLine className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                    <p className="text-lg font-medium">Enter an equation above to see its graph</p>
+                    <p className="text-sm mt-2">Try one of the preset equations to get started!</p>
                   </div>
                 </div>
               )}
             </div>
             
             {equation && graphData.length > 0 && (
-              <div className="mt-4 p-4 bg-green-50 rounded-lg">
-                <div className="text-sm text-green-800">
-                  <strong>Current equation:</strong> y = {equation}
+              <motion.div 
+                className="mt-6 p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <div className="text-lg text-green-800 font-bold mb-2">
+                  ✅ Current equation: y = {equation}
                 </div>
-                <div className="text-xs text-green-600 mt-1">
-                  Graph shows {graphData.length} data points from x = -10 to x = 10
+                <div className="text-sm text-green-700 space-y-1">
+                  <div>📈 Graph shows {graphData.length} data points from x = -10 to x = 10</div>
+                  <div>🎯 Domain: [-10, 10] | Range: [{Math.min(...graphData.map(d => d.y)).toFixed(2)}, {Math.max(...graphData.map(d => d.y)).toFixed(2)}]</div>
                 </div>
-              </div>
+              </motion.div>
             )}
           </div>
+        </div>
+
+        <div className="mt-8 text-center">
+          <motion.div 
+            className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-purple-100 to-pink-100 rounded-xl border border-purple-200"
+            animate={{ scale: [1, 1.02, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            <span className="text-purple-700 font-semibold">
+              🚀 Pro Tip: Experiment with different equations to discover mathematical patterns!
+            </span>
+          </motion.div>
         </div>
       </motion.div>
     </motion.div>
