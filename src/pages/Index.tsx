@@ -200,17 +200,13 @@ const Index = () => {
     }
   };
 
-  // Fixed canvas drawing functions with better interaction
+  // Original canvas drawing with smaller dots
   const drawShape = (ctx: CanvasRenderingContext2D) => {
     ctx.clearRect(0, 0, 600, 400);
     
-    // Enhanced canvas background with animated grid
-    ctx.fillStyle = 'rgba(99, 102, 241, 0.03)';
-    ctx.fillRect(0, 0, 600, 400);
-    
-    // Grid with better visibility
-    ctx.strokeStyle = 'rgba(99, 102, 241, 0.15)';
-    ctx.lineWidth = 0.5;
+    // Grid
+    ctx.strokeStyle = 'rgba(200, 200, 200, 0.3)';
+    ctx.lineWidth = 1;
     for (let i = 0; i < 600; i += 20) {
       ctx.beginPath();
       ctx.moveTo(i, 0);
@@ -224,15 +220,10 @@ const Index = () => {
       ctx.stroke();
     }
 
-    // Enhanced shape drawing with better gradients
-    const gradient = ctx.createLinearGradient(0, 0, 600, 400);
-    gradient.addColorStop(0, 'rgba(99, 102, 241, 0.8)');
-    gradient.addColorStop(0.5, 'rgba(168, 85, 247, 0.8)');
-    gradient.addColorStop(1, 'rgba(236, 72, 153, 0.8)');
-    
-    ctx.fillStyle = gradient;
-    ctx.strokeStyle = '#4F46E5';
-    ctx.lineWidth = 3;
+    // Draw shape
+    ctx.fillStyle = 'rgba(99, 102, 241, 0.3)';
+    ctx.strokeStyle = '#6366f1';
+    ctx.lineWidth = 2;
 
     if (currentShape.type === 'triangle') {
       const [a, b, c] = currentShape.vertices;
@@ -244,27 +235,15 @@ const Index = () => {
       ctx.fill();
       ctx.stroke();
 
-      // Enhanced vertices with better interaction (increased size for easier dragging)
-      currentShape.vertices.forEach((vertex, index) => {
-        // Larger glow effect for easier interaction
-        ctx.shadowColor = '#EF4444';
-        ctx.shadowBlur = 25;
+      // Smaller vertices (reduced from 20 to 8)
+      currentShape.vertices.forEach((vertex) => {
         ctx.beginPath();
-        ctx.arc(vertex.x, vertex.y, 20, 0, 2 * Math.PI); // Increased radius from 15 to 20
-        ctx.fillStyle = '#EF4444';
+        ctx.arc(vertex.x, vertex.y, 8, 0, 2 * Math.PI);
+        ctx.fillStyle = '#ef4444';
         ctx.fill();
-        ctx.shadowBlur = 0;
-        
-        // Border for better visibility
-        ctx.strokeStyle = '#DC2626';
-        ctx.lineWidth = 5; // Increased line width
+        ctx.strokeStyle = '#dc2626';
+        ctx.lineWidth = 2;
         ctx.stroke();
-        
-        // Inner highlight
-        ctx.beginPath();
-        ctx.arc(vertex.x, vertex.y, 12, 0, 2 * Math.PI); // Increased radius from 8 to 12
-        ctx.fillStyle = '#FECACA';
-        ctx.fill();
       });
 
     } else if (currentShape.type === 'rectangle') {
@@ -274,24 +253,15 @@ const Index = () => {
       ctx.fill();
       ctx.stroke();
 
-      // Corner handles with better interaction (increased size)
+      // Smaller corner handles (reduced from 20 to 8)
       currentShape.vertices.forEach((vertex) => {
-        ctx.shadowColor = '#EF4444';
-        ctx.shadowBlur = 25;
         ctx.beginPath();
-        ctx.arc(vertex.x, vertex.y, 20, 0, 2 * Math.PI); // Increased radius
-        ctx.fillStyle = '#EF4444';
+        ctx.arc(vertex.x, vertex.y, 8, 0, 2 * Math.PI);
+        ctx.fillStyle = '#ef4444';
         ctx.fill();
-        ctx.shadowBlur = 0;
-        
-        ctx.strokeStyle = '#DC2626';
-        ctx.lineWidth = 5; // Increased line width
+        ctx.strokeStyle = '#dc2626';
+        ctx.lineWidth = 2;
         ctx.stroke();
-        
-        ctx.beginPath();
-        ctx.arc(vertex.x, vertex.y, 12, 0, 2 * Math.PI); // Increased radius
-        ctx.fillStyle = '#FECACA';
-        ctx.fill();
       });
 
     } else {
@@ -300,32 +270,21 @@ const Index = () => {
       ctx.fill();
       ctx.stroke();
 
-      // Center handle (increased size)
-      ctx.shadowColor = '#EF4444';
-      ctx.shadowBlur = 25;
+      // Center handle (reduced from 18 to 8)
       ctx.beginPath();
-      ctx.arc(currentShape.center.x, currentShape.center.y, 18, 0, 2 * Math.PI); // Increased radius
-      ctx.fillStyle = '#EF4444';
+      ctx.arc(currentShape.center.x, currentShape.center.y, 8, 0, 2 * Math.PI);
+      ctx.fillStyle = '#ef4444';
       ctx.fill();
-      ctx.shadowBlur = 0;
 
-      // Radius control with better interaction (increased size)
-      ctx.shadowColor = '#10B981';
-      ctx.shadowBlur = 20;
+      // Radius control (reduced from 18 to 8)
       ctx.beginPath();
-      ctx.arc(currentShape.center.x + currentShape.radius, currentShape.center.y, 18, 0, 2 * Math.PI); // Increased radius
-      ctx.fillStyle = '#10B981';
+      ctx.arc(currentShape.center.x + currentShape.radius, currentShape.center.y, 8, 0, 2 * Math.PI);
+      ctx.fillStyle = '#10b981';
       ctx.fill();
-      ctx.shadowBlur = 0;
-      
-      // Add border to radius control
-      ctx.strokeStyle = '#059669';
-      ctx.lineWidth = 4;
-      ctx.stroke();
     }
   };
 
-  // Fixed mouse event handlers with better interaction detection
+  // Original mouse event handlers with better detection
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -338,7 +297,7 @@ const Index = () => {
       let found = false;
       currentShape.vertices.forEach((vertex, index) => {
         const distance = Math.sqrt((mouseX - vertex.x) ** 2 + (mouseY - vertex.y) ** 2);
-        if (distance < 25 && !found) { // Increased detection radius from 20 to 25
+        if (distance < 15 && !found) { // Smaller detection radius
           setIsDragging({ type: 'vertex', index });
           setDragOffset({ x: mouseX - vertex.x, y: mouseY - vertex.y });
           found = true;
@@ -349,10 +308,10 @@ const Index = () => {
       const radiusControlX = currentShape.center.x + currentShape.radius;
       const radiusControlDistance = Math.sqrt((mouseX - radiusControlX) ** 2 + (mouseY - currentShape.center.y) ** 2);
 
-      if (centerDistance < 20) { // Increased detection radius
+      if (centerDistance < 15) {
         setIsDragging({ type: 'center' });
         setDragOffset({ x: mouseX - currentShape.center.x, y: mouseY - currentShape.center.y });
-      } else if (radiusControlDistance < 20) { // Increased detection radius
+      } else if (radiusControlDistance < 15) {
         setIsDragging({ type: 'radius' });
         setDragOffset({ x: 0, y: 0 });
       }
@@ -370,8 +329,8 @@ const Index = () => {
     const mouseY = e.clientY - rect.top;
 
     if (isDragging.type === 'vertex' && isDragging.index !== undefined) {
-      const newX = Math.max(25, Math.min(575, mouseX - dragOffset.x)); // Increased margins
-      const newY = Math.max(25, Math.min(375, mouseY - dragOffset.y)); // Increased margins
+      const newX = Math.max(10, Math.min(590, mouseX - dragOffset.x));
+      const newY = Math.max(10, Math.min(390, mouseY - dragOffset.y));
 
       if (currentShape.type === 'triangle') {
         const newVertices = [...currentShape.vertices] as [Point, Point, Point];
@@ -402,11 +361,11 @@ const Index = () => {
         setCurrentShape({ ...currentShape, vertices: newVertices });
       }
     } else if (isDragging.type === 'center' && currentShape.type === 'circle') {
-      const newX = Math.max(currentShape.radius + 25, Math.min(575 - currentShape.radius, mouseX - dragOffset.x));
-      const newY = Math.max(currentShape.radius + 25, Math.min(375 - currentShape.radius, mouseY - dragOffset.y));
+      const newX = Math.max(currentShape.radius + 10, Math.min(590 - currentShape.radius, mouseX - dragOffset.x));
+      const newY = Math.max(currentShape.radius + 10, Math.min(390 - currentShape.radius, mouseY - dragOffset.y));
       setCurrentShape({ ...currentShape, center: { x: newX, y: newY } });
     } else if (isDragging.type === 'radius' && currentShape.type === 'circle') {
-      const newRadius = Math.max(30, Math.min(150, Math.abs(mouseX - currentShape.center.x))); // Increased minimum radius
+      const newRadius = Math.max(20, Math.min(120, Math.abs(mouseX - currentShape.center.x)));
       setCurrentShape({ ...currentShape, radius: newRadius });
     }
   };
@@ -611,7 +570,7 @@ const Index = () => {
 
   // New features
   const saveToHistory = () => {
-    setShapeHistory(prev => [...prev, { ...currentShape }].slice(-5)); // Keep last 5 shapes
+    setShapeHistory(prev => [...prev, { ...currentShape }].slice(-5));
   };
 
   const loadFromHistory = (shape: Shape) => {
@@ -740,7 +699,7 @@ const Index = () => {
 
       <div className="max-w-7xl mx-auto p-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Left Sidebar - Enhanced Game Stats */}
+          {/* Left Sidebar - Enhanced Game Stats (removed RandomShapeGenerator) */}
           <motion.div 
             className="lg:col-span-1 space-y-6"
             initial={{ x: -50, opacity: 0 }}
@@ -768,10 +727,6 @@ const Index = () => {
             <Timer 
               isActive={challengeMode} 
               onTimeUpdate={setChallengeTime} 
-            />
-
-            <RandomShapeGenerator 
-              onGenerateShape={setCurrentShape} 
             />
 
             {/* New Feature Buttons */}
@@ -912,7 +867,7 @@ const Index = () => {
                   ref={canvasRef}
                   width={600}
                   height={400}
-                  className="border-4 border-gradient-to-r from-blue-200 to-purple-200 rounded-2xl bg-gradient-to-br from-blue-25 to-purple-25 cursor-pointer shadow-inner w-full"
+                  className="border-2 border-gray-300 rounded-lg bg-white cursor-pointer shadow-inner w-full"
                   onMouseDown={handleMouseDown}
                   onMouseMove={handleMouseMove}
                   onMouseUp={handleMouseUp}
@@ -926,7 +881,7 @@ const Index = () => {
                 >
                   <div className="flex items-center">
                     <span className="mr-2">💡</span>
-                    <span className="font-semibold">Drag the colored dots to resize shapes easily!</span>
+                    <span className="font-semibold">Drag the red dots to reshape!</span>
                   </div>
                 </motion.div>
               </div>
@@ -1015,7 +970,6 @@ const Index = () => {
                   </div>
                 </motion.div>
 
-                {/* Enhanced shape-specific properties */}
                 {currentShape.type === 'triangle' && (properties as any).angles && (
                   <motion.div 
                     className="bg-gradient-to-r from-yellow-50 to-yellow-100 p-5 rounded-xl border-l-4 border-yellow-500"
@@ -1060,7 +1014,6 @@ const Index = () => {
               </div>
             </motion.div>
 
-            {/* Enhanced Challenge Mode */}
             <div className="bg-white rounded-xl shadow-xl p-6 border border-gray-100">
               <h3 className="text-xl font-bold mb-6 text-gray-800 flex items-center">
                 <span className="mr-2">🎯</span> Challenge Hub
